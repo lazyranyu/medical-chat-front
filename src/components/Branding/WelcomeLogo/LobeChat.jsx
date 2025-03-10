@@ -25,7 +25,7 @@ const WelcomeLogo = memo(({ mobile }) => {
             }}
         >
             {/*<LogoSpline height={"min(482px, 40vw)"} width={"min(976px, 80vw)"} />*/}
-            <FluentEmoji type={'anim'} emoji={'🧑‍⚕️'} size={412}  draggable={false}/>
+            <FluentEmoji type={'anim'} emoji={'🧑‍⚕️'} size={350}  draggable={false}/>
         </Center>
     )
 })

@@ -6,6 +6,7 @@ import "./globals.css";
 // };
 export { generateMetadata } from "./metadata"
 import StyleRegistry from "@/layout/StyleRegistry";
+import AppTheme from "@/layout/AppTheme";
 
 export const generateViewport = async () => {
   return {
@@ -24,9 +25,11 @@ export const generateViewport = async () => {
 export default function RootLayout({ children }) {
   return (
       <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
       <StyleRegistry>
-      {children}
+          <AppTheme>
+              {children}
+          </AppTheme>
       </StyleRegistry>
       </body>
       </html>

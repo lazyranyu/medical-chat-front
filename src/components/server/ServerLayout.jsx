@@ -1,6 +1,6 @@
 
 
-const ServerLayout = ({ Desktop}) => props => {
+const ServerLayout = ({Desktop}) =>async props => {
     return <Desktop {...props} />
 }
 

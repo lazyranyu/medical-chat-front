@@ -119,6 +119,7 @@ export default {
   },
   temp: '临时',
   tokenDetails: {
+    historySummary: '历史总结',
     chats: '会话消息',
     rest: '剩余可用',
     systemRole: '角色设定',

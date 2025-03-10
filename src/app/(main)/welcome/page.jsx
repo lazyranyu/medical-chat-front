@@ -7,6 +7,7 @@ import metadate from "@/locales/default/metadata"; // 根据实际路径调整
 
 import Actions from "./features/Actions"
 import Hero from "./features/Hero"
+import Layout from './layout'
 
 export const generateMetadata = async () => {
     return metadataModule.generate({

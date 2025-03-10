@@ -1,22 +1,26 @@
 "use client";
 
-import { Icon } from "@lobehub/ui"
-import { Button } from "antd"
-import { SendHorizonal } from "lucide-react"
+import {Icon} from "@lobehub/ui"
+import {Button} from "antd"
+import {SendHorizonal} from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { memo } from "react"
-import { useTranslation } from "react-i18next"
-import { Flexbox } from "react-layout-kit"
+import {useRouter} from "next/navigation"
+import {memo, useState} from "react"
+import {useTranslation} from "react-i18next"
+import {Flexbox} from "react-layout-kit"
 import welcome from "@/locales/default/welcome";
+import {LoginModal} from "@/components/login/LoginModal";
+import {RegisterModal} from "@/components/register/RegisterModal";
 
 // import {
 //     featureFlagsSelectors,
 //     useServerConfigStore
 // } from "@/store/serverConfig"
 
-const Actions = memo(({ mobile }) => {
-    const { t } = useTranslation("welcome")
+const Actions = memo(({mobile}) => {
+    const {t} = useTranslation("welcome");
+    const [loginVisible, setLoginVisible] = useState(false);
+    const [registerVisible, setRegisterVisible] = useState(false);
     const router = useRouter()
     //const { showMarket } = useServerConfigStore(featureFlagsSelectors)
 
@@ -28,31 +32,35 @@ const Actions = memo(({ mobile }) => {
             width={"100%"}
             wrap={"wrap"}
         >
-            {/*{showMarket && (*/}
-            {(
-                <Link href={"/discover"}>
-                    <Button
-                        block={mobile}
-                        size={"large"}
-                        style={{ minWidth: 160 }}
-                        type={"default"}
-                    >
-                        {welcome.button.market}
-                    </Button>
-                </Link>
-            )}
             <Button
                 block={mobile}
-                onClick={() => router.push("/chat")}
+                onClick={() => setRegisterVisible(true)}
                 size={"large"}
-                style={{ minWidth: 160 }}
+                style={{minWidth: 160}}
+                type={"default"}
+            >
+                {welcome.button.register}
+            </Button>
+            <Button
+                block={mobile}
+                onClick={() => setLoginVisible(true)}
+                size={"large"}
+                style={{minWidth: 160}}
                 type={"primary"}
             >
                 <Flexbox align={"center"} gap={4} horizontal justify={"center"}>
-                    {welcome.button.start}
-                    <Icon icon={SendHorizonal} />
+                    {welcome.button.login}
+                    <Icon icon={SendHorizonal}/>
                 </Flexbox>
             </Button>
+            <RegisterModal
+                open={registerVisible}
+                onClose={() => setRegisterVisible(false)}
+            />
+            <LoginModal
+                open={loginVisible}
+                onClose={() => setLoginVisible(false)}
+            />
         </Flexbox>
     )
 })

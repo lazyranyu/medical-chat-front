@@ -1,13 +1,14 @@
-// import { Session, User } from '@auth/core/types';
-// import {
-//     ActiveSessionResource,
-//     SignInProps,
-//     SignOut,
-//     UserProfileProps,
-//     UserResource,
-// } from '@clerk/types';
-
-
+/**
+ * 用户认证相关初始状态
+ */
 export const initialAuthState = {
-    oAuthSSOProviders: []
+  // 用户认证信息
+  auth: {
+    // 是否已登录
+    isLoggedIn: false,
+    // 认证令牌
+    token: null,
+    // 令牌过期时间
+    tokenExpiry: null,
+  },
 };

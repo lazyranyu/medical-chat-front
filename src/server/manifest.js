@@ -32,7 +32,7 @@ export class Manifest {
         }
       ],
       scope: "/",
-      screenshots: screenshots.map(item => this._getScreenshot(item)),
+      // screenshots: screenshots.map(item => this._getScreenshot(item)),
       short_name: name,
       splash_pages: null,
       start_url: ".",

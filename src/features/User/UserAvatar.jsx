@@ -6,6 +6,7 @@ import { forwardRef } from 'react';
 
 import { BRANDING_NAME } from '@/const/branding';
 import { DEFAULT_USER_AVATAR_URL } from '@/const/meta';
+import { useStoreSelector } from '@/hooks/useStoreSelector'; // 导入 useStoreSelector
 import { useUserStore } from '@/store/user';
 import { authSelectors, userProfileSelectors } from '@/store/user/selectors';
 
@@ -45,12 +46,16 @@ const useStyles = createStyles(({ css, token }) => ({
 const UserAvatar = forwardRef(
     ({ size = 40, background, clickable, className, style, ...rest }, ref) => {
         const { styles, cx } = useStyles();
-        const [avatar, username] = useUserStore((s) => [
-            userProfileSelectors.userAvatar(s),
-            userProfileSelectors.username(s),
-        ]);
-
-        const isSignedIn = useUserStore(authSelectors.isLogin);
+        // 使用 useStoreSelector 代替直接使用 useUserStore
+        const avatar = useStoreSelector(useUserStore, userProfileSelectors.userAvatar);
+        const username = useStoreSelector(useUserStore, userProfileSelectors.username);
+        const isSignedIn = useStoreSelector(useUserStore, authSelectors.isLogin);
+        // const [avatar, username] = useUserStore((s) => [
+        //     userProfileSelectors.userAvatar(s),
+        //     userProfileSelectors.username(s),
+        // ]);
+        //
+        // const isSignedIn = useUserStore(authSelectors.isLogin);
 
         return (
             <Avatar

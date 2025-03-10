@@ -24,8 +24,7 @@ const TopActions = memo(({ tab }) => {
             <Link
                 aria-label={common.tab.chat}
                 //todo
-                // href={"/chat"}
-                href={"/welcome"}
+                 href={"/chat"}
                 // onClick={e => {
                 //     e.preventDefault()
                 //     switchBackToChat(useSessionStore.getState().activeId)

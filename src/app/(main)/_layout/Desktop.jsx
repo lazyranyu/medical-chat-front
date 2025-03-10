@@ -11,15 +11,21 @@ const Layout = memo(({ children, nav }) => {
     const { isPWA } = usePlatform();
     const theme = useTheme();
 
-
     return (
         <>
             <Flexbox
-                height={ `calc(100% - 40px)`}
+                height={[
+                    '100vh',
+                    '-webkit-fill-available',
+                    '100dvh'
+                ]}
                 horizontal
                 style={{
-                    borderTop: `1px solid ${theme.colorBorder}`,
+                    borderTop: isPWA ? `1px solid ${theme.colorBorder}` : undefined,
                     position: 'relative',
+                    // 添加以下保证高度准确计算
+                    boxSizing: 'border-box',
+                    minHeight: '100dvh' // 防止内容不足时出现空白
                 }}
                 width={'100%'}
             >

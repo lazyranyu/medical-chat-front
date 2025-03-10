@@ -1,76 +1,74 @@
-import { subscribeWithSelector } from 'zustand/middleware';
-
-import { enableClerk } from '@/const/auth';
-import { useUserStore } from '../../store';
+import { initialAuthState } from './initialState';
 
 /**
- * 创建认证相关的动作
- *
- * 此函数定义了与认证相关的动作，包括启用认证、登出和打开登录界面
- * 它根据使用的认证服务（Clerk或NextAuth）的不同，动态导入相应的模块并调用相关方法
- *
- * @param {Function} set Zustand的set函数，用于更新状态
- * @param {Function} get Zustand的get函数，用于获取当前状态
- * @returns {Object} 包含认证相关动作的对象
+ * 创建用户认证相关状态切片
+ * @param {Function} set - Zustand 的 set 函数
+ * @param {Function} get - Zustand 的 get 函数
+ * @returns {Object} 用户认证相关状态和动作
  */
 export const createAuthSlice = (set, get) => ({
-    /**
-     * 检查是否启用了认证
-     *
-     * 此函数返回一个布尔值，表示是否启用了Clerk或NextAuth认证
-     *
-     * @returns {boolean} 如果启用了Clerk或NextAuth认证，则返回true；否则返回false
-     */
-    enableAuth: () => {
-        return enableClerk || get()?.enabledNextAuth || false;
-    },
-    /**
-     * 执行登出操作
-     *
-     * 此函数根据启用的认证服务，动态导入相应的模块并调用登出方法
-     * 如果使用的是Clerk，还会重定向到当前页面
-     */
-    logout: async () => {
-        if (enableClerk) {
-            const { signOut } = await import('@clerk/clerk-react');
-            signOut({ redirectUrl: location.toString() });
-            return;
-        }
+  ...initialAuthState,
 
-        const enableNextAuth = get().enabledNextAuth;
-        if (enableNextAuth) {
-            const { signOut } = await import('next-auth/react');
-            await signOut();
-        }
-    },
-    /**
-     * 打开登录界面
-     *
-     * 此函数根据启用的认证服务，动态导入相应的模块并调用登录方法
-     * 如果使用的是Clerk，还会根据提供的配置参数进行定制化登录流程
-     * 如果使用的是NextAuth，且只有一个OAuth提供者，则直接使用该提供者进行登录
-     */
-    openLogin: async () => {
-        if (enableClerk) {
-            const { clerkSignIn } = await import('@clerk/clerk-react');
-            const redirectUrl = location.toString();
-            clerkSignIn({
-                fallbackRedirectUrl: redirectUrl,
-                signUpForceRedirectUrl: redirectUrl,
-                signUpUrl: '/signup',
-            });
-            return;
-        }
+  /**
+   * 设置登录状态
+   * @param {boolean} isLoggedIn - 是否已登录
+   * @param {Object} authInfo - 认证信息
+   */
+  setLoginStatus: (isLoggedIn, authInfo = {}) => set((state) => {
+    // 确保 state.auth 存在
+    const currentAuth = state.auth || initialAuthState.auth;
+    
+    return {
+      auth: {
+        ...currentAuth,
+        isLoggedIn,
+        ...(isLoggedIn ? authInfo : { token: null, tokenExpiry: null }),
+      },
+    };
+  }),
 
-        const enableNextAuth = get().enabledNextAuth;
-        if (enableNextAuth) {
-            const { signIn } = await import('next-auth/react');
-            const providers = get()?.oAuthSSOProviders;
-            if (providers && providers.length === 1) {
-                await signIn(providers[0]);
-                return;
-            }
-            await signIn();
-        }
-    },
+  /**
+   * 登录
+   * @param {string} token - 认证令牌
+   * @param {Date|string} tokenExpiry - 令牌过期时间
+   */
+  login: (token, tokenExpiry) => {
+    const expiry = typeof tokenExpiry === 'string' ? new Date(tokenExpiry) : tokenExpiry;
+    
+    set((state) => {
+      // 确保 state.auth 存在
+      const currentAuth = state.auth || initialAuthState.auth;
+      
+      return {
+        auth: {
+          ...currentAuth,
+          isLoggedIn: true,
+          token,
+          tokenExpiry: expiry,
+        },
+      };
+    });
+  },
+
+  /**
+   * 登出
+   */
+  logout: () => set((state) => {
+    // 确保 state.auth 存在
+    const currentAuth = state.auth || initialAuthState.auth;
+    
+    return {
+      auth: {
+        ...currentAuth,
+        isLoggedIn: false,
+        token: null,
+        tokenExpiry: null,
+      },
+    };
+  }),
+
+  /**
+   * 重置认证状态
+   */
+  resetAuth: () => set({ auth: initialAuthState.auth }),
 });
