@@ -25,13 +25,12 @@ const FileList = memo(() => {
     // 判断是否有文件
     const showFileList = inputFilesList.length > 0
     
-    // // 使用静态变量代替状态管理
-    // const inputFilesList = [
-    //     { id: 1, name: "file1.txt", size: "1MB" },
-    //     { id: 2, name: "file2.jpg", size: "2MB" },
-    //     { id: 3, name: "file3.pdf", size: "3MB" }
-    // ]
-    // const showFileList = true
+    // 调试输出文件列表
+    useEffect(() => {
+        if (inputFilesList.length > 0) {
+            console.log('文件列表:', inputFilesList);
+        }
+    }, [inputFilesList]);
 
     const { styles } = useStyles()
     if (!inputFilesList.length) return null

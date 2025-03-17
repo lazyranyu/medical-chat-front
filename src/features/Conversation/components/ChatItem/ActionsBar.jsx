@@ -5,7 +5,7 @@ import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useChatStore } from '@/store/chat';
-import { chatSelectors } from '@/store/chat/selectors';
+import { messageSelectors } from '@/store/chat/selectors';
 import { useStoreSelector } from '@/hooks/useStoreSelector';
 
 import { renderActions } from '../../Actions';
@@ -25,7 +25,7 @@ const ActionsBar = memo(props => {
 })
 
 const Actions = memo(({ id, inPortalThread }) => {
-  const item = useChatStore(chatSelectors.getMessageById(id), isEqual)
+  const item = useChatStore(messageSelectors.getMessageById(id), isEqual)
   const { t } = useTranslation("common")
   const [
     deleteMessage,

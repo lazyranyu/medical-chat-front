@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Flexbox } from 'react-layout-kit';
 
 import { MAX_WIDTH } from '@/const/layoutTokens';
+import error from "@/locales/default/error";
 
 const NotFound = memo(() => {
-  const { t } = useTranslation('error');
   return (
     <Flexbox align={'center'} justify={'center'} style={{ minHeight: '100%', width: '100%' }}>
       <h1
@@ -28,15 +28,15 @@ const NotFound = memo(() => {
       </h1>
       <FluentEmoji emoji={'👀'} size={64} />
       <h2 style={{ fontWeight: 'bold', marginTop: '1em', textAlign: 'center' }}>
-        {t('notFound.title')}
+        {error.notFound.title}
       </h2>
       <p style={{ lineHeight: '1.8', marginBottom: '2em' }}>
-        {t('notFound.desc')}
+        {error.notFound.desc}
         <br />
-        <div style={{ textAlign: 'center' }}>{t('notFound.check')}</div>
+        <div style={{ textAlign: 'center' }}>{error.notFound.check}</div>
       </p>
       <Link href="/">
-        <Button type={'primary'}>{t('notFound.backHome')}</Button>
+        <Button type={'primary'}>{error.notFound.backHome}</Button>
       </Link>
     </Flexbox>
   );

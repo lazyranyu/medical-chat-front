@@ -61,7 +61,7 @@ const Clear = memo(() => {
         >
             <ActionIcon
                 icon={Eraser}
-                overlayStyle={{ maxWidth: "none" }}
+                styles={{ root: { maxWidth: "none" } }}
                 placement={"bottom"}
                 title={actionTitle}
             />

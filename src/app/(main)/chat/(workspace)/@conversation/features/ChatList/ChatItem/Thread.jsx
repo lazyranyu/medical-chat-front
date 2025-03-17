@@ -9,7 +9,7 @@ import { useChatStore } from "@/store/chat"
 import { threadSelectors } from "@/store/chat/selectors"
 
 import ThreadItem from "./ThreadItem"
-
+import chat from "@/locales/default/chat";
 const useStyles = createStyles(({ css, token, isDarkMode }) => ({
   container: css`
     cursor: pointer;

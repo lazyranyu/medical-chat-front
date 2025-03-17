@@ -12,7 +12,7 @@ import { Flexbox } from "react-layout-kit"
 
 import { ARTIFACT_THINKING_TAG } from "@/const/plugin"
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors } from "@/store/chat/selectors"
 import { dotLoading } from "@/styles/loading"
 
 /**
@@ -54,7 +54,7 @@ const Render = memo(({ children, id }) => {
   const { styles, cx } = useStyles()
 
   const [isGenerating] = useChatStore(s => {
-    const message = chatSelectors.getMessageById(id)(s)
+    const message = messageSelectors.getMessageById(id)(s)
     return [!isLobeThinkingClosed(message?.content)]
   })
 

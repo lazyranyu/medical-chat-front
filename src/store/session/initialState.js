@@ -1,10 +1,7 @@
-// sort-imports-ignore
-import { initialSessionListState } from './slices/list/initialState';
-import { initialSessionSettingsState } from './slices/settings/initialState';
+import { initialSessionState } from "./slices/session/initialState"
+import { initSessionGroupState } from "./slices/sessionGroup/initialState"
 
 export const initialState = {
-  ...initialSessionListState,
-  ...initialSessionSettingsState,
-  
-  // 可以根据需要添加其他状态
-}; 
+  ...initSessionGroupState,
+  ...initialSessionState
+}

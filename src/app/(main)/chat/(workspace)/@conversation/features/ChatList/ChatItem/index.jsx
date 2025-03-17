@@ -6,7 +6,7 @@ import ActionsBar from "@/features/Conversation/components/ChatItem/ActionsBar"
 import { useAgentStore } from "@/store/agent"
 import { agentSelectors } from "@/store/agent/selectors"
 import { useChatStore } from "@/store/chat"
-import { chatSelectors, threadSelectors } from "@/store/chat/selectors"
+import { messageSelectors, threadSelectors } from "@/store/chat/selectors"
 
 import Thread from "./Thread"
 
@@ -53,14 +53,14 @@ const MainChatItem = memo(({ id, index }) => {
     return [config.displayMode || "chat"]
   })
 
-  const userRole = useChatStore(s => chatSelectors.getMessageById(id)(s)?.role)
+  const userRole = useChatStore(s => messageSelectors.getMessageById(id)(s)?.role)
 
   const placement =
       displayMode === "chat" && userRole === "user" ? "end" : "start"
 
   const [showThread, historyLength] = useChatStore(s => [
     threadSelectors.hasThreadBySourceMsgId(id)(s),
-    chatSelectors.mainDisplayChatIDs(s).length
+    messageSelectors.mainDisplayChatIDs(s).length
   ])
 
   const enableHistoryDivider = useAgentStore(s => {

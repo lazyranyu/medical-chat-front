@@ -31,7 +31,8 @@ const Avatar = memo(() => {
             color={"blue"}
             open
             placement={"right"}
-            prefixCls={"guide"}
+            classNames={{ root: "guide" }}
+            styles={{ root: {} }}
             title={
                 <Flexbox align={"center"} gap={8} horizontal>
                     <div style={{ lineHeight: "22px" }}>{common.userPanel.moveGuide}</div>

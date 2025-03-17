@@ -1,14 +1,14 @@
 import { memo, useEffect } from 'react';
 
 import { useChatStore } from '@/store/chat';
-import { chatSelectors } from '@/store/chat/selectors';
+import { messageSelectors } from '@/store/chat/selectors';
 import { useStoreSelector } from '@/hooks/useStoreSelector';
 
 import BackBottom from './BackBottom';
 
 const AutoScroll = memo(({ atBottom, isScrolling, onScrollToBottom }) => {
-  const trackVisibility = useStoreSelector(useChatStore, chatSelectors.isAIGenerating);
-  const str = useStoreSelector(useChatStore, s => s.messages.map(m => m.content).join(''));
+  const trackVisibility = useStoreSelector(useChatStore, messageSelectors.isAIGenerating);
+  const str = useStoreSelector(messageSelectors.mainAIChatsMessageString);
 
   useEffect(() => {
     console.log('AutoScroll 组件状态:', {

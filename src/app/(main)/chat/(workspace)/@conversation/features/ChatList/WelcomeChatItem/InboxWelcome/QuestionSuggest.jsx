@@ -8,11 +8,13 @@ import Link from "next/link"
 import { memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
+import React from "react"
 
 import { BRANDING_NAME } from "@/const/branding"
 import { USAGE_DOCUMENTS } from "@/const/url"
 import { useSendMessage } from "@/features/ChatInput/useSend"
 import { useChatStore } from "@/store/chat"
+import welcome from "@/locales/default/welcome";
 
 const useStyles = createStyles(({ css, token, responsive }) => ({
   card: css`
@@ -64,28 +66,32 @@ const qaItems = [
 const QuestionSuggest = memo(({ mobile }) => {
   const [updateInputMessage] = useChatStore(s => [s.updateInputMessage])
 
-  const { t } = useTranslation("welcome")
   const { styles } = useStyles()
   const { send: sendMessage } = useSendMessage()
   
-  // 使用 useMemo 确保服务器和客户端渲染时使用相同的顺序
-  const qa = useMemo(() => shuffle([...qaItems]), []);
+  // 修改为使用useEffect确保只在客户端执行随机排序
+  const [qa, setQa] = React.useState(qaItems);
+  
+  React.useEffect(() => {
+    // 只在客户端执行随机排序
+    setQa(shuffle([...qaItems]));
+  }, []);
 
   return (
       <Flexbox gap={8} width={"100%"}>
         <Flexbox align={"center"} horizontal justify={"space-between"}>
-          <div className={styles.title}>{t("guide.questions.title")}</div>
+          <div className={styles.title}>{welcome.guide.questions.title}</div>
           <Link href={USAGE_DOCUMENTS} target={"_blank"}>
             <ActionIcon
                 icon={ArrowRight}
                 size={{ blockSize: 24, fontSize: 16 }}
-                title={t("guide.questions.moreBtn")}
+                title={welcome.guide.questions.moreBtn}
             />
           </Link>
         </Flexbox>
         <Flexbox gap={8} horizontal wrap={"wrap"}>
-          {qa.slice(0, mobile ? 2 : 5).map(item => {
-            const text = t(`guide.qa.${item}`, { appName: BRANDING_NAME })
+          {qa.slice(0, 5).map(item => {
+            const text = welcome.guide.qa[item].replace(/appName/g,BRANDING_NAME)
             return (
                 <Flexbox
                     align={"center"}
@@ -98,7 +104,7 @@ const QuestionSuggest = memo(({ mobile }) => {
                       sendMessage({ isWelcomeQuestion: true })
                     }}
                 >
-                  {t(text)}
+                  {text}
                 </Flexbox>
             )
           })}

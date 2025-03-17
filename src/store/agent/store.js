@@ -1,25 +1,20 @@
-// sort-imports-ignore
-import { subscribeWithSelector } from 'zustand/middleware';
-import { shallow } from 'zustand/shallow';
-import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from "zustand/shallow"
+import { createWithEqualityFn } from "zustand/traditional"
 
-import { createDevtools } from '../middleware/createDevtools';
-import { initialState } from './initialState';
-import { createAgentSettingsSlice } from './slices/settings/action';
+import { createDevtools } from "../middleware/createDevtools"
+import { initialState } from "./initialState"
+import { createChatSlice } from "./slices/chat/action"
 
-// 定义 AgentStore 类型
-export const createStore = (...params) => ({
+const createStore = (...parameters) => ({
   ...initialState,
+  ...createChatSlice(...parameters)
+})
 
-  ...createAgentSettingsSlice(...params),
+//  ===============  implement useStore ============ //
 
-  // 可以根据需要添加其他 slice
-});
+const devtools = createDevtools("agent")
 
-//  ===============  实装 useStore ============ //
-const devtools = createDevtools('agent');
-
-export const useAgentStore = createWithEqualityFn(
-  subscribeWithSelector(devtools(createStore)),
-  shallow,
-); 
+export const useAgentStore = createWithEqualityFn()(
+    devtools(createStore),
+    shallow
+)

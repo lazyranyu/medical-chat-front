@@ -23,8 +23,8 @@ export const generateMetadata = async () => {
         description: description,
         icons: {
             apple: "/apple-touch-icon.png?v=1",
-            icon: "/favicon.ico?v=1",
-            shortcut: "/favicon-32x32.ico?v=1"
+            icon: "/favicon.ico",
+            shortcut: "/favicon-32x32.ico"
         },
         manifest: noManifest ? undefined : "/manifest.json",
         metadataBase: new URL(OFFICIAL_URL),

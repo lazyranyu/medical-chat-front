@@ -29,6 +29,8 @@ const FilePreview = memo(() => {
     const upload = async fileList => {
         if (!fileList || fileList.length === 0) return
 
+        console.log('准备上传文件:', fileList);
+
         // Filter out files that are not images if the model does not support image uploads
         const files = Array.from(fileList).filter(file => {
             if (canUploadImage) return true
@@ -36,7 +38,14 @@ const FilePreview = memo(() => {
             return !file.type.startsWith("image")
         })
 
-        uploadFiles(files)
+        console.log('过滤后的文件:', files);
+        
+        try {
+            const result = await uploadFiles(files);
+            console.log('上传结果:', result);
+        } catch (error) {
+            console.error('上传文件失败:', error);
+        }
     }
 
     return (

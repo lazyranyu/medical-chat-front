@@ -8,6 +8,7 @@ import { preferenceSelectors } from "@/store/user/selectors"
 import { isCommandPressed } from "@/utils/keyboard"
 
 import { useAutoFocus } from "../useAutoFocus"
+import chat from "@/locales/default/chat";
 
 const useStyles = createStyles(({ css }) => {
   return {
@@ -32,7 +33,6 @@ const useStyles = createStyles(({ css }) => {
 // const staticUseCmdEnterToSend = true; // 模拟用户偏好设置（true=使用Cmd+Enter发送）
 
 const InputArea = memo(({ onSend, value, loading, onChange }) => {
-  const { t } = useTranslation("chat")
   const { styles } = useStyles()
   const ref = useRef(null)
   const isChineseInput = useRef(false)
@@ -104,7 +104,7 @@ const InputArea = memo(({ onSend, value, loading, onChange }) => {
                 send()
               }
             }}
-            placeholder={t("sendPlaceholder")}
+            placeholder={chat.sendPlaceholder}
             ref={ref}
             type={"pure"}
             value={value}

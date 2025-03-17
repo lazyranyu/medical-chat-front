@@ -1,27 +1,28 @@
-// sort-imports-ignore
-import { subscribeWithSelector } from 'zustand/middleware';
-import { shallow } from 'zustand/shallow';
-import { createWithEqualityFn } from 'zustand/traditional';
+import { subscribeWithSelector } from "zustand/middleware"
+import { shallow } from "zustand/shallow"
+import { createWithEqualityFn } from "zustand/traditional"
 
-import { createDevtools } from '../middleware/createDevtools';
-import { initialState } from './initialState';
-import { createSessionListSlice } from './slices/list/action';
-import { createSessionSettingsSlice } from './slices/settings/action';
+import { isDev } from "@/utils/env"
 
-// 定义 SessionStore 类型
-export const createStore = (...params) => ({
-  ...initialState,
+import { createDevtools } from "../middleware/createDevtools"
+import { initialState } from "./initialState"
+import { createSessionSlice } from "./slices/session/action"
+import { createSessionGroupSlice } from "./slices/sessionGroup/action"
 
-  ...createSessionListSlice(...params),
-  ...createSessionSettingsSlice(...params),
+const createStore = (...parameters) => ({
+    ...initialState,
+    ...createSessionSlice(...parameters),
+    ...createSessionGroupSlice(...parameters)
+})
 
-  // 可以根据需要添加其他 slice
-});
+//  ===============  implement useStore ============ //
+const devtools = createDevtools("session")
 
-//  ===============  实装 useStore ============ //
-const devtools = createDevtools('session');
-
-export const useSessionStore = createWithEqualityFn(
-  subscribeWithSelector(devtools(createStore)),
-  shallow,
-); 
+export const useSessionStore = createWithEqualityFn()(
+    subscribeWithSelector(
+        devtools(createStore, {
+            name: "LobeChat_Session" + (isDev ? "_DEV" : "")
+        })
+    ),
+    shallow
+)

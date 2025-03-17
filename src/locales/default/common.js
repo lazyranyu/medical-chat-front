@@ -17,6 +17,7 @@ export default {
   back: '返回',
   batchDelete: '批量删除',
   blog: '产品博客',
+  branching: '创建子话题',
   cancel: '取消',
   changelog: '更新日志',
   close: '关闭',

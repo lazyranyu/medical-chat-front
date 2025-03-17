@@ -5,15 +5,15 @@ import { Flexbox } from "react-layout-kit"
 import { LOADING_FLAT } from "@/const/message"
 import { InPortalThreadContext } from "@/features/Conversation/components/ChatItem/InPortalThreadContext"
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors } from "@/store/chat/selectors"
 
 import { DefaultMessage } from "../Default"
 import FileChunks from "./FileChunks"
 
 export const AssistantMessage = memo(
     ({ id, tools, content, chunksList, ...props }) => {
-      const editing = useChatStore(chatSelectors.isMessageEditing(id))
-      const generating = useChatStore(chatSelectors.isMessageGenerating(id))
+      const editing = useChatStore(messageSelectors.isMessageEditing(id))
+      const generating = useChatStore(messageSelectors.isMessageGenerating(id))
 
       const inThread = useContext(InPortalThreadContext)
       const isToolCallGenerating =

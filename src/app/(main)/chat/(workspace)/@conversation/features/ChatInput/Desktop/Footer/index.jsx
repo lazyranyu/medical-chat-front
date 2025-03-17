@@ -7,7 +7,7 @@ import { Flexbox } from "react-layout-kit"
 import StopLoadingIcon from "@/components/StopLoading"
 import { useSendMessage } from "@/features/ChatInput/useSend"
 import { useChatStore } from '@/store/chat';
-import { chatSelectors } from '@/store/chat/selectors';
+import { messageSelectors } from '@/store/chat/selectors';
 import { useStoreSelector } from '@/hooks/useStoreSelector';
 import { isMacOS } from "@/utils/platform"
 
@@ -55,12 +55,12 @@ const Footer = memo(({ onExpandChange, expand }) => {
     const { styles } = useStyles()
 
     // 使用useStoreSelector替代直接使用useChatStore
-    const isAIGenerating = useStoreSelector(useChatStore, chatSelectors.isAIGenerating);
+    const isAIGenerating = useStoreSelector(useChatStore, messageSelectors.isAIGenerating);
     const stopGenerateMessage = useStoreSelector(useChatStore, state => state.stopGenerateMessage);
     
     // // 替换原有的状态获取
     // const [isAIGenerating, stopGenerateMessage] = [
-    //     staticIsAIGenerating,  // 使用静态变量代替 chatSelectors.isAIGenerating
+    //     staticIsAIGenerating,  // 使用静态变量代替 messageSelectors.isAIGenerating
     //     staticStopGenerateMessage  // 使用静态方法代替 store 的 stopGenerateMessage
     // ];
 

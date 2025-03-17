@@ -48,7 +48,7 @@ const ChunkItem = memo(
                     {/*  {text}*/}
                     {/*</Typography.Text>*/}
                     {similarity && (
-                        <Tooltip title={similarity}>
+                        <Tooltip title={similarity} styles={{ root: {} }}>
                             <Center className={styles.badge}>{similarity.toFixed(1)}</Center>
                         </Tooltip>
                     )}

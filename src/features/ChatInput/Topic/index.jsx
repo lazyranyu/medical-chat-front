@@ -82,7 +82,7 @@ const SaveTopic = memo(({ mobile }) => {
               </div>
             }
         >
-          <Tooltip>
+          <Tooltip styles={{ root: {} }}>
             <ActionIcon
                 aria-label={desc}
                 icon={icon}
@@ -94,7 +94,7 @@ const SaveTopic = memo(({ mobile }) => {
     )
   } else {
     return (
-        <Tooltip title={<HotKeys desc={desc} inverseTheme keys={hotkeys} />}>
+        <Tooltip title={<HotKeys desc={desc} inverseTheme keys={hotkeys} />} styles={{ root: {} }}>
           <Button
               aria-label={desc}
               icon={<Icon icon={icon} />}

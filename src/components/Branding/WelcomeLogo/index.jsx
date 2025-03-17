@@ -7,10 +7,10 @@ import { isCustomBranding } from "@/const/version"
 import CustomLogo from "./Custom"
 import LobeChat from "./LobeChat"
 
-export const WelcomeLogo = memo(({ mobile }) => {
+export const WelcomeLogo = memo(() => {
   if (isCustomBranding) {
-    return <CustomLogo mobile={mobile} />
+    return <CustomLogo  />
   }
 
-  return <LobeChat mobile={mobile} />
+  return <LobeChat />
 })

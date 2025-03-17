@@ -8,7 +8,7 @@ export const useFetchMessages = () => {
   const [sessionId] = useSessionStore((s) => [s.activeId]);
   const [activeTopicId, fetchMessages] = useChatStore((s) => [
     s.activeTopicId,
-    s.fetchMessages,
+    s.useFetchMessages,
   ]);
 
   useEffect(() => {

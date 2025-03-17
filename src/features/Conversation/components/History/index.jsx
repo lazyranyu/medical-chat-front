@@ -11,6 +11,7 @@ import { useChatStore } from "@/store/chat"
 import { topicSelectors } from "@/store/chat/selectors"
 
 import HistoryDivider from "./HistoryDivider"
+import chat from "@/locales/default/chat";
 
 const useStyles = createStyles(({ css, token }) => ({
   container: css`
@@ -29,7 +30,6 @@ const useStyles = createStyles(({ css, token }) => ({
 
 const History = memo(() => {
   const { styles, theme } = useStyles()
-  const { t } = useTranslation("chat")
   const [content, model] = useChatStore(s => {
     const history = topicSelectors.currentActiveTopicSummary(s)
     return [history?.content, history?.model]
@@ -49,7 +49,7 @@ const History = memo(() => {
                   />
                 </Center>
                 <Typography.Text type={"secondary"}>
-                  {t("historySummary")}
+                  {chat.tokenDetails.historySummary}
                 </Typography.Text>
                 {model && (
                     <div>

@@ -8,8 +8,11 @@ import {memo, useState} from "react"
 import {useTranslation} from "react-i18next"
 import {Flexbox} from "react-layout-kit"
 import urlJoin from "url-join"
+
+
 import {useUserStore} from "@/store/user"
 import {userGeneralSettingsSelectors} from "@/store/user/selectors"
+import welcome from "@/locales/default/welcome";
 
 const { Paragraph } = Typography
 
@@ -54,7 +57,6 @@ const useStyles = createStyles(({ css, token, responsive }) => ({
 }))
 
 const AgentsSuggest = memo(({ mobile }) => {
-    const { t } = useTranslation("welcome")
     const [sliceStart, setSliceStart] = useState(0)
 // 直接赋值静态数据
     const assistantList = [{
@@ -91,12 +93,12 @@ const AgentsSuggest = memo(({ mobile }) => {
     return (
         <Flexbox gap={8} width={"100%"}>
             <Flexbox align={"center"} horizontal justify={"space-between"}>
-                <div className={styles.title}>{t("guide.agents.title")}</div>
+                <div className={styles.title}>{welcome.guide.agents.title}</div>
                 <ActionIcon
                     icon={RefreshCw}
                     onClick={handleRefresh}
                     size={{ blockSize: 24, fontSize: 14 }}
-                    title={t("guide.agents.replaceBtn")}
+                    title={welcome.guide.agents.replaceBtn}
                 />
             </Flexbox>
             <Grid gap={8} rows={2}>

@@ -1,5 +1,5 @@
 import { initialPreferenceState } from './initialState';
-
+import { merge } from '@/utils/merge';
 /**
  * 创建用户偏好设置相关状态切片
  * @param {Function} set - Zustand 的 set 函数
@@ -43,7 +43,11 @@ export const createPreferenceSlice = (set, get) => ({
             useCmdEnterToSend: value !== undefined ? value : !state.preference.useCmdEnterToSend,
         },
     })),
-
+    updateGuideState: async (guide) => {
+        const { updatePreference } = get();
+        const nextGuide = merge(get().preference.guide, guide);
+        await updatePreference({ guide: nextGuide });
+    },
     /**
      * 重置偏好设置
      */

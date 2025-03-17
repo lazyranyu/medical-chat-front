@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
 
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors, threadSelectors } from "@/store/chat/selectors"
 
 const useStyles = createStyles(({ css, token }) => ({
   active: css`
@@ -37,8 +37,8 @@ const Item = memo(({ id, title, lastActiveAt, sourceMessageId }) => {
   const openThreadInPortal = useChatStore(s => s.openThreadInPortal)
   const { styles, cx } = useStyles()
   const [isActive, messageCount] = useChatStore(s => [
-    s.activeThreadId === id,
-    chatSelectors.countMessagesByThreadId(id)(s)
+    threadSelectors.activeThreadId(s) === id,
+    messageSelectors.countMessagesByThreadId(id)(s)
   ])
   return (
       <Flexbox

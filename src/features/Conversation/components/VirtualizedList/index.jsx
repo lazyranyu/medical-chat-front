@@ -8,7 +8,7 @@ import { Center, Flexbox } from 'react-layout-kit';
 import { Virtuoso } from 'react-virtuoso';
 
 import { useChatStore } from '@/store/chat';
-import { chatSelectors } from '@/store/chat/selectors';
+import { messageSelectors } from '@/store/chat/selectors';
 import { useStoreSelector } from '@/hooks/useStoreSelector';
 
 import AutoScroll from '../AutoScroll';
@@ -19,9 +19,9 @@ const VirtualizedList = memo(({ mobile, dataSource, itemContent }) => {
   const [atBottom, setAtBottom] = useState(true);
   const [isScrolling, setIsScrolling] = useState(false);
 
-  const id = useStoreSelector(useChatStore, chatSelectors.currentChatKey);
-  const isFirstLoading = useStoreSelector(useChatStore, chatSelectors.currentChatLoadingState);
-  const isCurrentChatLoaded = useStoreSelector(useChatStore, chatSelectors.isCurrentChatLoaded);
+  const id = useStoreSelector(useChatStore, messageSelectors.currentChatKey);
+  const isFirstLoading = useStoreSelector(useChatStore, messageSelectors.currentChatLoadingState);
+  const isCurrentChatLoaded = useStoreSelector(useChatStore, messageSelectors.isCurrentChatLoaded);
 
   useEffect(() => {
     if (virtuosoRef.current) {

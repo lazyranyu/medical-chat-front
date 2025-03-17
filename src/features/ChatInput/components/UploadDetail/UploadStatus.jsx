@@ -8,10 +8,10 @@ import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
 
 import { formatSize } from "@/utils/format"
+import chat from "@/locales/default/chat";
 
 const UploadStatus = memo(({ status, size, uploadState }) => {
     const theme = useTheme()
-    const { t } = useTranslation("chat")
 
     switch (status) {
         default:
@@ -20,7 +20,7 @@ const UploadStatus = memo(({ status, size, uploadState }) => {
                 <Flexbox align={"center"} gap={4} horizontal>
                     <Icon icon={Loader2Icon} size={{ fontSize: 12 }} spin />
                     <Typography.Text style={{ fontSize: 12 }} type={"secondary"}>
-                        {t("upload.preview.status.pending")}
+                        {chat.upload.preview.status.pending}
                     </Typography.Text>
                 </Flexbox>
             )
@@ -43,7 +43,7 @@ const UploadStatus = memo(({ status, size, uploadState }) => {
                 <Flexbox align={"center"} gap={4} horizontal>
                     <Progress percent={uploadState?.progress} size={14} type="circle" />
                     <Typography.Text style={{ fontSize: 12 }} type={"secondary"}>
-                        {formatSize(size)} · {t("upload.preview.status.processing")}
+                        {formatSize(size)} · {chat.upload.preview.status.processing}
                     </Typography.Text>
                 </Flexbox>
             )

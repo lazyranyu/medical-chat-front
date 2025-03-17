@@ -16,6 +16,7 @@ import portal from "./portal"
 import ragEval from "./ragEval"
 import setting from "./setting"
 import welcome from "./welcome"
+import topic from "./topic";
 
 const resources = {
   auth,
@@ -35,6 +36,7 @@ const resources = {
   ragEval,
   setting,
   tool,
+  topic,
   welcome
 }
 

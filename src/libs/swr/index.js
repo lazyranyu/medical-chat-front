@@ -19,8 +19,9 @@ import useSWR from "swr"
  * 适用于 messages、topics、sessions 等用户会在客户端交互的数据
  */
 // @ts-ignore
-export const useClientDataSWR = (key, fetch, config) =>
-    useSWR(key, fetch, {
+export const useClientDataSWR = (key, fetch, config) => {
+    // 返回一个函数，该函数在组件内部调用时才会执行 useSWR
+    return () => useSWR(key, fetch, {
         // default is 2000ms ,it makes the user's quick switch don't work correctly.
         // Cause issue like this: https://github.com/lobehub/lobe-chat/issues/532
         // we need to set it to 0.
@@ -31,22 +32,25 @@ export const useClientDataSWR = (key, fetch, config) =>
         revalidateOnReconnect: true,
         ...config
     })
+}
 
 /**
  * This type of request method is relatively "dead" request mode, which will only be triggered on the first request.
  * it suitable for first time request like `initUserState`
 
- * 这一类请求方法是相对“死”的请求模式，只会在第一次请求时触发。
+ * 这一类请求方法是相对"死"的请求模式，只会在第一次请求时触发。
  * 适用于第一次请求，例如 `initUserState`
  */
 // @ts-ignore
-export const useOnlyFetchOnceSWR = (key, fetch, config) =>
-    useSWR(key, fetch, {
+export const useOnlyFetchOnceSWR = (key, fetch, config) => {
+    // 返回一个函数，该函数在组件内部调用时才会执行 useSWR
+    return () => useSWR(key, fetch, {
         refreshWhenOffline: false,
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         ...config
     })
+}
 
 /**
  * 这一类请求方法用于做操作触发，必须使用 mutute 来触发请求操作，好处是自带了 loading / error 状态。
@@ -54,8 +58,9 @@ export const useOnlyFetchOnceSWR = (key, fetch, config) =>
  * 非常适用于新建等操作。
  */
 // @ts-ignore
-export const useActionSWR = (key, fetch, config) =>
-    useSWR(key, fetch, {
+export const useActionSWR = (key, fetch, config) => {
+    // 返回一个函数，该函数在组件内部调用时才会执行 useSWR
+    return () => useSWR(key, fetch, {
         refreshWhenHidden: false,
         refreshWhenOffline: false,
         revalidateOnFocus: false,
@@ -63,3 +68,4 @@ export const useActionSWR = (key, fetch, config) =>
         revalidateOnReconnect: false,
         ...config
     })
+}

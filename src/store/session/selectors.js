@@ -1,2 +1,2 @@
-export { sessionListSelectors } from './slices/list/selectors';
-export { sessionSettingsSelectors } from './slices/settings/selectors'; 
+export { sessionMetaSelectors, sessionSelectors } from './slices/session/selectors';
+export { sessionGroupSelectors } from './slices/sessionGroup/selectors';

@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
 
 import { AsyncTaskStatus } from "@/types/asyncTask"
+import components from "@/locales/default/components";
+import common from "@/locales/default/common";
 
 const useStyles = createStyles(({ css, token, isDarkMode }) => ({
     errorReason: css`
@@ -40,8 +42,8 @@ const EmbeddingStatus = memo(
                 return (
                     <Flexbox horizontal>
                         <Tooltip
-                            overlayStyle={{ pointerEvents: "none" }}
-                            title={t("FileParsingStatus.chunks.embeddingStatus.processing")}
+                            styles={{ root: { pointerEvents: "none" } }}
+                            title={components.FileParsingStatus.chunks.embeddingStatus.processing}
                         >
                             <Tag
                                 bordered={false}
@@ -60,10 +62,10 @@ const EmbeddingStatus = memo(
             case AsyncTaskStatus.Error: {
                 return (
                     <Tooltip
-                        overlayStyle={{ maxWidth: 340, pointerEvents: "none" }}
+                        styles={{ root: { maxWidth: 340, pointerEvents: "none" } }}
                         title={
                             <Flexbox gap={4}>
-                                {t("FileParsingStatus.chunks.embeddingStatus.errorResult")}
+                                {components.FileParsingStatus.chunks.embeddingStatus.errorResult}
                                 {embeddingError && (
                                     <Flexbox className={styles.errorReason}>
                                         [{embeddingError.name}]:{" "}
@@ -77,14 +79,14 @@ const EmbeddingStatus = memo(
                         }
                     >
                         <Tag bordered={false} className={className} color={"error"}>
-                            {t("FileParsingStatus.chunks.embeddingStatus.error")}{" "}
+                            {components.FileParsingStatus.chunks.embeddingStatus.error}{" "}
                             <Icon
                                 icon={RotateCwIcon}
                                 onClick={() => {
                                     onErrorClick?.("embedding")
                                 }}
                                 style={{ cursor: "pointer" }}
-                                title={t("retry", { ns: "common" })}
+                                title={common.retry}
                             />
                         </Tag>
                     </Tooltip>
@@ -95,8 +97,8 @@ const EmbeddingStatus = memo(
                 return (
                     <Flexbox horizontal>
                         <Tooltip
-                            overlayStyle={{ pointerEvents: "none" }}
-                            title={t("FileParsingStatus.chunks.embeddingStatus.success")}
+                            styles={{ root: { pointerEvents: "none" } }}
+                            title={components.FileParsingStatus.chunks.embeddingStatus.success}
                         >
                             <Tag
                                 bordered={false}

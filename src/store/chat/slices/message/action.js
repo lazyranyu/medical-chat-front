@@ -1,322 +1,539 @@
-import { initialMessageState } from './initialState';
+/**
+ * 聊天消息切片 - 动作
+ * 
+ * 定义了消息相关的状态更新动作
+ * 包括消息的创建、删除、更新、复制等操作
+ */
+
+// Disable the auto sort key eslint rule to make the code more logic and readable
+import { copyToClipboard } from "@lobehub/ui"
+import isEqual from "fast-deep-equal"
+import { mutate } from "swr"
+
+import { useClientDataSWR } from "@/libs/swr"
+import { messageService} from "@/api/message";
+import { topicService} from "@/api/topic";
+import { setNamespace } from "@/utils/storeDebug"
+import { nanoid } from "@/utils/uuid"
+
+import { messageSelectors } from "../../selectors"
+import { preventLeavingFn, toggleBooleanList } from "../../utils"
+import { messagesReducer } from "./reducer"
+import {messageMapKey} from "@/store/chat/utils/messageMapKey";
+
+const n = setNamespace("m")
+
+const SWR_USE_FETCH_MESSAGES = "SWR_USE_FETCH_MESSAGES"
 
 /**
- * 创建消息相关状态切片
- * @param {Function} set - Zustand 的 set 函数
- * @param {Function} get - Zustand 的 get 函数
- * @returns {Object} 消息相关状态和动作
+ * 创建消息切片
+ * 定义了所有消息相关的动作
+ * 
+ * @param {Function} set - Zustand的set函数，用于更新状态
+ * @param {Function} get - Zustand的get函数，用于获取当前状态
+ * @returns {Object} 包含所有消息相关动作的对象
  */
+// 在顶部定义更语义化的 key 生成器
+const genMessagesKey = (sessionId, topicId) => [SWR_USE_FETCH_MESSAGES, sessionId, topicId];
+
 export const createMessageSlice = (set, get) => ({
-    ...initialMessageState,
+  /**
+   * 删除指定ID的消息
+   * 如果消息包含工具调用，会同时删除相关的工具消息
+   * 
+   * @param {string} id - 要删除的消息ID
+   */
+  deleteMessage: async id => {
+    const message = messageSelectors.getMessageById(id)(get())
+    if (!message) return
 
-    /**
-     * 更新输入消息
-     * @param {string} message - 新的输入消息
-     */
-    updateInputMessage: (message) => {
-        console.log('更新输入消息:', message);
-        set({ inputMessage: message });
-    },
+    let ids = [message.id]
 
-    /**
-     * 添加用户消息
-     * @param {string} content - 消息内容
-     * @returns {Object} 添加的消息对象
-     */
-    addUserMessage: (content) => {
-        const message = {
-            id: Date.now(),
-            role: 'user',
-            content,
-            createdAt: new Date().toISOString(),
-        };
+    // 如果消息包含工具调用，则删除所有相关消息
+    if (message.tools) {
+      const toolMessageIds = message.tools.flatMap(tool => {
+        const messages = messageSelectors
+            .activeBaseChats(get())
+            .filter(m => m.tool_call_id === tool.id)
 
-        console.log('添加用户消息:', message);
-        
-        set((state) => {
-            const newMessages = [...state.messages, message];
-            console.log('更新后的消息列表:', newMessages);
-            return {
-                messages: newMessages,
-            };
-        });
+        return messages.map(m => m.id)
+      })
+      ids = ids.concat(toolMessageIds)
+    }
 
-        return message;
-    },
+    get().internal_dispatchMessage({ type: "deleteMessages", ids })
+    await messageService.removeMessages(ids)
+    await get().refreshMessages()
+  },
 
-    /**
-     * 添加 AI 消息
-     * @param {string} content - 消息内容
-     * @returns {Object} 添加的消息对象
-     */
-    addAIMessage: (content) => {
-        const message = {
-            id: Date.now(),
-            role: 'assistant',
-            content,
-            createdAt: new Date().toISOString(),
-        };
+  /**
+   * 删除工具消息
+   * 同时从助手消息中移除对应的工具项
+   * 
+   * @param {string} id - 要删除的工具消息ID
+   */
+  deleteToolMessage: async id => {
+    const message = messageSelectors.getMessageById(id)(get())
+    if (!message || message.role !== "tool") return
 
-        console.log('添加AI消息:', message);
-        
-        set((state) => {
-            const newMessages = [...state.messages, message];
-            console.log('更新后的消息列表:', newMessages);
-            return {
-                messages: newMessages,
-            };
-        });
+    const removeToolInAssistantMessage = async () => {
+      if (!message.parentId) return
+      await get().internal_removeToolToAssistantMessage(
+          message.parentId,
+          message.tool_call_id
+      )
+    }
 
-        return message;
-    },
+    await Promise.all([
+      // 1. 删除工具消息
+      get().internal_deleteMessage(id),
+      // 2. 从助手消息中移除工具项
+      removeToolInAssistantMessage()
+    ])
+  },
 
-    /**
-     * 清空所有消息
-     */
-    clearMessage: () => {
-        console.log('清空所有消息');
-        set({ messages: [] });
-    },
+  /**
+   * 清空当前会话的所有消息
+   * 如果有活动话题，也会删除该话题
+   */
+  clearMessage: async () => {
+    const {
+      activeId,
+      activeTopicId,
+      refreshMessages,
+      refreshTopic,
+      switchTopic
+    } = get()
 
-    /**
-     * 修改消息内容
-     * @param {string} id - 消息ID
-     * @param {string} content - 新的消息内容
-     * @returns {Promise<void>}
-     */
-    modifyMessageContent: async (id, content) => {
-        console.log(`修改消息 ${id} 的内容为:`, content);
-        
-        set((state) => {
-            const newMessages = state.messages.map(msg => 
-                msg.id === id ? { ...msg, content } : msg
-            );
-            
-            console.log('更新后的消息列表:', newMessages);
-            return {
-                messages: newMessages,
-            };
-        });
-    },
+    await messageService.removeMessagesByAssistant(activeId, activeTopicId)
 
-    /**
-     * 切换消息编辑状态
-     * @param {string} id - 消息ID
-     * @param {boolean} editing - 是否处于编辑状态
-     */
-    toggleMessageEditing: (id, editing) => {
-        console.log(`切换消息 ${id} 的编辑状态为:`, editing);
-        
-        set((state) => {
-            // 如果messageEditingIds不存在，初始化为空数组
-            const messageEditingIds = state.messageEditingIds || [];
-            
-            // 如果editing为true且不在数组中，添加到数组
-            // 如果editing为false且在数组中，从数组中移除
-            const newMessageEditingIds = editing 
-                ? (messageEditingIds.includes(id) ? messageEditingIds : [...messageEditingIds, id])
-                : messageEditingIds.filter(item => item !== id);
-            
-            return {
-                messageEditingIds: newMessageEditingIds,
-            };
-        });
-    },
+    if (activeTopicId) {
+      await topicService.removeTopic(activeTopicId)
+    }
+    await refreshTopic()
+    await refreshMessages()
 
-    /**
-     * 获取消息列表
-     * @param {string} sessionId - 会话ID
-     * @param {string} topicId - 主题ID
-     * @returns {Promise<void>}
-     */
-    fetchMessages: async (sessionId, topicId) => {
-        try {
-            console.log('开始获取消息，设置 messagesInit = false');
-            // 设置消息初始化状态
-            set({ messagesInit: false });
-            
-            // 这里应该是实际的API调用，获取消息列表
-            // 目前使用模拟数据
-            // 在实际项目中，这里应该调用后端API获取消息
-            console.log(`获取会话 ${sessionId} 主题 ${topicId} 的消息列表`);
-            
-            // 如果需要与Java后端交互，可以在这里添加相关代码
-            // 例如：const messages = await fetch(`/api/messages?sessionId=${sessionId}&topicId=${topicId}`);
-            
-            // 模拟延迟，然后设置消息初始化完成
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // 获取当前消息列表
-            const currentMessages = get().messages;
-            
-            // 如果当前没有消息，添加一条测试消息
-            if (currentMessages.length === 0) {
-                const testMessage = {
-                    id: Date.now(),
-                    role: 'assistant',
-                    content: '欢迎使用医疗聊天系统，请问有什么可以帮助您的？',
-                    createdAt: new Date().toISOString(),
-                };
-                
-                // 获取消息映射键
-                const { messageSelectors } = get();
-                const key = `${sessionId}_${topicId}`;
-                
-                // 更新消息列表和消息映射
-                set((state) => {
-                    const newMessages = [...state.messages, testMessage];
-                    return {
-                        messages: newMessages,
-                        messagesInit: true,
-                        messagesMap: {
-                            ...state.messagesMap,
-                            [key]: newMessages
-                        }
-                    };
-                });
-                console.log('添加了欢迎消息:', testMessage);
-            } else {
-                // 如果已有消息，也需要更新messagesMap
-                const key = `${sessionId}_${topicId}`;
-                set((state) => ({
-                    messagesInit: true,
-                    messagesMap: {
-                        ...state.messagesMap,
-                        [key]: state.messages
-                    }
-                }));
-            }
-            
-            console.log('消息获取完成，设置 messagesInit = true');
-        } catch (error) {
-            console.error('获取消息列表失败:', error);
-            // 即使出错也要设置初始化完成，避免一直显示加载状态
-            set({ messagesInit: true });
-            console.log('出错但仍设置 messagesInit = true');
-        }
-    },
+    // 删除话题后，切换回默认话题
+    switchTopic()
+  },
+  
+  /**
+   * 清空所有消息
+   * 删除数据库中的所有消息记录
+   */
+  clearAllMessages: async () => {
+    const { refreshMessages } = get()
+    await messageService.removeAllMessages()
+    await refreshMessages()
+  },
+  
+  /**
+   * 添加AI消息
+   * 使用当前输入框的内容创建一条助手消息
+   */
+  addAIMessage: async () => {
+    const {
+      internal_createMessage,
+      updateInputMessage,
+      activeTopicId,
+      activeId,
+      inputMessage
+    } = get()
+    if (!activeId) return
 
-    /**
-     * 发送消息
-     * @param {Object} params - 发送参数
-     * @param {string} params.message - 消息内容，默认为当前输入框内容
-     * @param {Array} params.files - 附带文件，默认为空
-     * @param {boolean} params.onlyAddUserMessage - 是否只添加用户消息不生成 AI 回复
-     * @param {boolean} params.isWelcomeQuestion - 是否是欢迎页面的问题
-     */
-    sendMessage: async (params = {}) => {
-        const state = get();
-        const {
-            message = state.inputMessage,
-            files = [],
-            onlyAddUserMessage = false,
-            isWelcomeQuestion = false
-        } = params;
+    await internal_createMessage({
+      content: inputMessage,
+      role: "assistant",
+      sessionId: activeId,
+      // 如果有活动话题ID，则添加到消息中
+      topicId: activeTopicId
+    })
 
-        console.log('sendMessage 被调用，参数:', {
-            message,
-            files,
-            onlyAddUserMessage,
-            isWelcomeQuestion,
-            currentState: {
-                inputMessage: state.inputMessage,
-                isAIGenerating: state.isAIGenerating,
-                messagesCount: state.messages.length
-            }
-        });
+    updateInputMessage("")
+  },
+  
+  /**
+   * 复制消息内容
+   * 并记录复制事件
+   * 
+   * @param {string} id - 消息ID
+   * @param {string} content - 要复制的内容
+   */
+  copyMessage: async (id, content) => {
+    await copyToClipboard(content)
 
-        // 获取当前的 isAIGenerating 状态
-        const currentIsAIGenerating = state.isAIGenerating;
+    // get().internal_traceMessage(id, { eventType: TraceEventType.CopyMessage })
+  },
+  
+  /**
+   * 切换消息编辑状态
+   * 
+   * @param {string} id - 消息ID
+   * @param {boolean} editing - 是否处于编辑状态
+   */
+  toggleMessageEditing: (id, editing) => {
+    set(
+        {
+          messageEditingIds: toggleBooleanList(
+              get().messageEditingIds,
+              id,
+              editing
+          )
+        },
+        false,
+        "toggleMessageEditing"
+    )
+  },
 
-        // 确保 isAIGenerating 初始状态为 false
-        if (currentIsAIGenerating && !isWelcomeQuestion) {
-            console.log('AI 正在生成回复，不发送新消息');
-            return;
-        }
+  /**
+   * 更新输入框消息内容
+   * 
+   * @param {string} message - 新的输入框内容
+   */
+  updateInputMessage: message => {
+    if (isEqual(message, get().inputMessage)) return
 
-        // 如果没有消息且没有文件，则不发送
-        if (!message.trim() && files.length === 0) {
-            console.log('没有消息且没有文件，不发送');
-            return;
-        }
+    set({ inputMessage: message }, false, n("updateInputMessage", message))
+  },
+  
+  /**
+   * 修改消息内容
+   * 并记录修改事件
+   * 
+   * @param {string} id - 消息ID
+   * @param {string} content - 新的消息内容
+   */
+  modifyMessageContent: async (id, content) => {
+    // 记录修改事件
+    // // 由于消息内容将会改变，所以需要在更新前发送跟踪，否则会获取错误的数据
+    // get().internal_traceMessage(id, {
+    //   eventType: TraceEventType.ModifyMessage,
+    //   nextContent: content
+    // })
 
-        try {
-            // 创建用户消息对象
-            const userMessage = {
-                id: Date.now(),
-                role: 'user',
-                content: message,
-                createdAt: new Date().toISOString(),
-            };
-            
-            console.log('准备添加用户消息:', userMessage);
-            
-            // 直接更新state，确保消息被添加
-            set((state) => {
-                const newMessages = [...state.messages, userMessage];
-                console.log('更新后的消息列表:', newMessages);
-                return {
-                    messages: newMessages,
-                    inputMessage: '', // 清空输入框
-                    messagesInit: true, // 确保messagesInit为true
-                };
-            });
-            
-            console.log('用户消息已添加，当前消息列表:', get().messages);
+    await get().internal_updateMessageContent(id, content)
+  },
+  
+  /**
+   * 使用SWR获取消息
+   * 当启用时，会自动获取并更新消息列表
+   *
+   * @param {boolean} enable - 是否启用
+   * @param {string} sessionId - 会话ID
+   * @param {string} activeTopicId - 活动话题ID
+   * @returns {Object} SWR响应对象
+   */
+  // useFetchMessages: (enable, sessionId, activeTopicId) =>
+  //     useClientDataSWR(
+  //         enable ? [SWR_USE_FETCH_MESSAGES, sessionId, activeTopicId] : null,
+  //         async ([, sessionId, topicId]) =>
+  //             messageService.getMessages(sessionId, topicId),
+  //         {
+  //           onSuccess: (messages, key) => {
+  //             const nextMap = {
+  //               ...get().messagesMap,
+  //               [messageMapKey(sessionId, activeTopicId)]: messages
+  //             }
+  //             console.log('sessionId', sessionId);
+  //             console.log('activeTopicId', activeTopicId);
+  //             // 如果消息已初始化且映射没有变化，不需要更新
+  //             if (get().messagesInit && isEqual(nextMap, get().messagesMap)) return
+  //
+  //             set(
+  //                 { messagesInit: true, messagesMap: nextMap },
+  //                 false,
+  //                 n("useFetchMessages", { messages, queryKey: key })
+  //             )
+  //           }
+  //         }
+  //     ),
+  useFetchMessages: (enable, sessionId, activeTopicId) =>{
+    const mapKey = messageMapKey(sessionId, activeTopicId)
+    const messages = get().messagesMap[mapKey] || []
+    const nextMap = {
+      ...get().messagesMap,
+      [messageMapKey('inbox', activeTopicId)]: messages
+    }
+    const key = [SWR_USE_FETCH_MESSAGES, sessionId, activeTopicId];
+    console.log('sessionId', sessionId);
+    console.log('key', key);
+    set(
+        { messagesInit: true, messagesMap: nextMap },
+        false,
+        n('useFetchMessages', { messages, queryKey: key }),
+    );
+  },
 
-            // 如果只添加用户消息，则不生成 AI 回复
-            if (onlyAddUserMessage) {
-                console.log('只添加用户消息，不生成 AI 回复');
-                return;
-            }
+  /**
+   * 刷新消息列表
+   * 触发SWR重新获取数据
+   */
+  refreshMessages: async () => {
+    await mutate([SWR_USE_FETCH_MESSAGES, get().activeId, get().activeTopicId])
+  },
 
-            // 开始生成 AI 回复
-            console.log('开始生成 AI 回复，设置 isAIGenerating = true');
-            set({ isAIGenerating: true });
+  /**
+   * 内部方法：分发消息动作
+   * 使用reducer处理消息状态更新
+   * 
+   * @param {Object} payload - 包含动作类型和数据的载荷
+   */
+  internal_dispatchMessage: payload => {
+    const { activeId } = get()
 
-            // 这里应该是实际的 API 调用
-            // 模拟 API 调用延迟
-            await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!activeId) return
 
-            // 创建AI回复消息对象
-            const aiMessage = {
-                id: Date.now() + 1,
-                role: 'assistant',
-                content: '这是 AI 的回复',
-                createdAt: new Date().toISOString(),
-            };
-            
-            console.log('准备添加AI回复:', aiMessage);
-            
-            // 直接更新state，确保AI回复被添加
-            set((state) => {
-                const newMessages = [...state.messages, aiMessage];
-                console.log('添加AI回复后的消息列表:', newMessages);
-                return {
-                    messages: newMessages,
-                    isAIGenerating: false, // 设置生成状态为false
-                    messagesInit: true, // 确保messagesInit为true
-                };
-            });
-            
-            console.log('AI回复已添加，当前消息列表:', get().messages);
-            
-            // 确保状态更新后，再次检查消息列表
-            setTimeout(() => {
-                const currentState = get();
-                console.log('发送完成后的状态:', {
-                    messages: currentState.messages,
-                    isAIGenerating: currentState.isAIGenerating,
-                    messagesInit: currentState.messagesInit
-                });
-            }, 100);
-        } catch (error) {
-            console.error('发送消息失败:', error);
-            // 确保即使出错也重置生成状态
-            set({ 
-                isAIGenerating: false,
-                messagesInit: true // 确保messagesInit为true
-            });
-        }
-    },
-});
+    const messages = messagesReducer(
+        messageSelectors.activeBaseChats(get()),
+        payload
+    )
+
+    const nextMap = {
+      ...get().messagesMap,
+      [messageSelectors.currentChatKey(get())]: messages
+    }
+
+    if (isEqual(nextMap, get().messagesMap)) return
+
+    set({ messagesMap: nextMap }, false, {
+      type: `dispatchMessage/${payload.type}`,
+      payload
+    })
+  },
+
+  /**
+   * 内部方法：更新消息错误
+   * 
+   * @param {string} id - 消息ID
+   * @param {Object} error - 错误信息
+   */
+  internal_updateMessageError: async (id, error) => {
+    get().internal_dispatchMessage({
+      id,
+      type: "updateMessage",
+      value: { error }
+    })
+    await messageService.updateMessage(id, { error })
+    await get().refreshMessages()
+  },
+  
+  /**
+   * 内部方法：更新消息内容
+   * 
+   * @param {string} id - 消息ID
+   * @param {string} content - 新的消息内容
+   * @param {Array} toolCalls - 工具调用数据
+   */
+  internal_updateMessageContent: async (id, content, toolCalls) => {
+    const {
+      internal_dispatchMessage,
+      refreshMessages,
+      internal_transformToolCalls
+    } = get()
+
+    // 由于异步更新方法和刷新需要约100ms
+    // 我们需要在前端更新消息内容以避免更新闪烁
+    // 参考: https://medium.com/@kyledeguzmanx/what-are-optimistic-updates-483662c3e171
+    if (toolCalls) {
+      internal_dispatchMessage({
+        id,
+        type: "updateMessage",
+        value: { tools: internal_transformToolCalls(toolCalls) }
+      })
+    } else {
+      internal_dispatchMessage({
+        id,
+        type: "updateMessage",
+        value: { content }
+      })
+    }
+
+    await messageService.updateMessage(id, {
+      content,
+      tools: toolCalls ? internal_transformToolCalls(toolCalls) : undefined
+    })
+    await refreshMessages()
+  },
+
+  /**
+   * 内部方法：创建消息
+   * 
+   * @param {Object} message - 消息数据
+   * @param {Object} context - 上下文信息
+   * @returns {string} 创建的消息ID
+   */
+  internal_createMessage: async (message, context) => {
+    const {
+      internal_createTmpMessage,
+      refreshMessages,
+      internal_toggleMessageLoading
+    } = get()
+    let tempId = context?.tempMessageId
+    if (!tempId) {
+      // 使用乐观更新避免等待
+      tempId = internal_createTmpMessage(message)
+
+      internal_toggleMessageLoading(true, tempId)
+    }
+
+    const id = await messageService.createMessage(message)
+    if (!context?.skipRefresh) {
+      internal_toggleMessageLoading(true, tempId)
+      await refreshMessages()
+    }
+
+    internal_toggleMessageLoading(false, tempId)
+    return id
+  },
+
+  /**
+   * 内部方法：获取消息列表
+   * 直接从API获取消息并更新状态
+   */
+  internal_fetchMessages: async () => {
+    const messages = await messageService.getMessages(
+        get().activeId,
+        get().activeTopicId
+    )
+    const nextMap = {
+      ...get().messagesMap,
+      [messageSelectors.currentChatKey(get())]: messages
+    }
+    // 如果消息已初始化且映射没有变化，不需要更新
+    if (get().messagesInit && isEqual(nextMap, get().messagesMap)) return
+
+    set(
+        { messagesInit: true, messagesMap: nextMap },
+        false,
+        n("internal_fetchMessages", { messages })
+    )
+  },
+  
+  /**
+   * 内部方法：创建临时消息
+   * 用于乐观更新，在API响应前先在UI中显示消息
+   * 
+   * @param {Object} message - 消息数据
+   * @returns {string} 临时消息ID
+   */
+  internal_createTmpMessage: message => {
+    const { internal_dispatchMessage } = get()
+
+    // 使用乐观更新避免等待
+    const tempId = "tmp_" + nanoid()
+    internal_dispatchMessage({
+      type: "createMessage",
+      id: tempId,
+      value: message
+    })
+
+    return tempId
+  },
+  
+  /**
+   * 内部方法：删除消息
+   * 
+   * @param {string} id - 要删除的消息ID
+   */
+  internal_deleteMessage: async id => {
+    get().internal_dispatchMessage({ type: "deleteMessage", id })
+    await messageService.removeMessage(id)
+    await get().refreshMessages()
+  },
+  
+  // /**
+  //  * 内部方法：跟踪消息事件
+  //  *
+  //  * @param {string} id - 消息ID
+  //  * @param {Object} payload - 事件数据
+  //  */
+  // internal_traceMessage: async (id, payload) => {
+  //   // 获取消息
+  //   const message = messageSelectors.getMessageById(id)(get())
+  //   if (!message) return
+  //
+  //   const traceId = message?.traceId
+  //   const observationId = message?.observationId
+  //
+  //   // 如果是助手消息且有跟踪ID，记录事件
+  //   if (traceId && message?.role === "assistant") {
+  //     traceService
+  //         .traceEvent({
+  //           traceId,
+  //           observationId,
+  //           content: message.content,
+  //           ...payload
+  //         })
+  //         .catch()
+  //   }
+  // },
+
+  // ----- 加载状态管理 ------- //
+  
+  /**
+   * 内部方法：切换消息加载状态
+   * 
+   * @param {boolean} loading - 是否正在加载
+   * @param {string} id - 消息ID
+   */
+  internal_toggleMessageLoading: (loading, id) => {
+    set(
+        {
+          messageLoadingIds: toggleBooleanList(
+              get().messageLoadingIds,
+              id,
+              loading
+          )
+        },
+        false,
+        "internal_toggleMessageLoading"
+    )
+  },
+  
+  /**
+   * 内部方法：切换加载数组状态
+   * 通用方法，用于管理各种加载状态数组
+   * 
+   * @param {string} key - 状态键名
+   * @param {boolean} loading - 是否正在加载
+   * @param {string} id - 项目ID
+   * @param {string} action - 动作名称，用于调试
+   * @returns {AbortController|undefined} 如果是加载状态，返回中止控制器
+   */
+  internal_toggleLoadingArrays: (key, loading, id, action) => {
+    if (loading) {
+      // 添加页面离开前的提示
+      window.addEventListener("beforeunload", preventLeavingFn)
+
+      // 创建中止控制器，用于取消请求
+      const abortController = new AbortController()
+      set(
+          {
+            abortController,
+            [key]: toggleBooleanList(get()[key], id, loading)
+          },
+          false,
+          action
+      )
+
+      return abortController
+    } else {
+      if (!id) {
+        // 如果没有ID，清空整个数组
+        set({ abortController: undefined, [key]: [] }, false, action)
+      } else
+        // 否则只移除指定ID
+        set(
+            {
+              abortController: undefined,
+              [key]: toggleBooleanList(get()[key], id, loading)
+            },
+            false,
+            action
+        )
+
+      // 移除页面离开前的提示
+      window.removeEventListener("beforeunload", preventLeavingFn)
+    }
+  }
+})

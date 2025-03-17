@@ -3,7 +3,7 @@ import { memo } from "react"
 import BubblesLoading from "@/components/BubblesLoading"
 import { LOADING_FLAT } from "@/const/message"
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors } from "@/store/chat/selectors"
 
 export const DefaultMessage = memo(
     ({
@@ -13,7 +13,7 @@ export const DefaultMessage = memo(
          isToolCallGenerating,
          addIdOnDOM = true
      }) => {
-        const editing = useChatStore(chatSelectors.isMessageEditing(id))
+        const editing = useChatStore(messageSelectors.isMessageEditing(id))
 
         if (isToolCallGenerating) return
 

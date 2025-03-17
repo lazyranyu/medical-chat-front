@@ -45,14 +45,44 @@ const createStore = (set, get) => {
         // 模拟文件上传
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        const newFiles = Array.from(files).map(file => ({
-          id: Date.now() + Math.random(),
-          file,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          uploadState: 'success',
-        }));
+        // 使用Promise.all处理所有文件
+        const filePromises = Array.from(files).map(async (file) => {
+          // 为图片和视频文件创建预览URL（使用Base64）
+          let previewUrl = null;
+          if (file.type.startsWith('image') || file.type.startsWith('video')) {
+            try {
+              // 使用FileReader将文件转换为Base64
+              previewUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+              console.log(`为文件 ${file.name} 创建了Base64预览URL`);
+            } catch (error) {
+              console.error(`为文件 ${file.name} 创建Base64预览URL失败:`, error);
+            }
+          }
+          
+          return {
+            id: Date.now() + Math.random(),
+            file,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            previewUrl,
+            status: 'success',
+            uploadState: {
+              progress: 100,
+              speed: 0,
+              restTime: 0
+            },
+          };
+        });
+
+        // 等待所有文件处理完成
+        const newFiles = await Promise.all(filePromises);
+        console.log('处理后的文件列表数量:', newFiles.length);
 
         set((state) => ({
           chatUploadFileList: [...state.chatUploadFileList, ...newFiles],
@@ -81,6 +111,10 @@ const createStore = (set, get) => {
     // 移除聊天上传文件
     removeChatUploadFile: (id) => {
       set((state) => {
+        // 查找要删除的文件
+        const fileToRemove = state.chatUploadFileList.find(file => file.id === id);
+        // 不再需要释放URL，因为我们使用的是Base64
+        
         const newList = state.chatUploadFileList.filter(file => file.id !== id);
 
         // 如果没有文件了，更新聊天 store 中的 hasUploadedFiles 状态
@@ -102,7 +136,10 @@ const createStore = (set, get) => {
 
     // 清空聊天上传文件列表
     clearChatUploadFileList: () => {
-      set({ chatUploadFileList: [] });
+      set((state) => {
+        // 不再需要释放URL，因为我们使用的是Base64
+        return { chatUploadFileList: [] };
+      });
 
       setTimeout(() => {
         try {

@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DOCUMENTS_REFER_URL, GITHUB } from '@/const/url';
+import common from "@/locales/default/common";
 // import { featureFlagsSelectors, useServerConfigStore } from '@/store/serverConfig';
 
 const BottomActions = memo(() => {
@@ -19,8 +20,8 @@ const BottomActions = memo(() => {
         </Link>
       )}
       { (
-        <Link aria-label={t('document')} href={DOCUMENTS_REFER_URL} target={'_blank'}>
-          <ActionIcon icon={Book} placement={'right'} title={t('document')} />
+        <Link aria-label={common.document} href={DOCUMENTS_REFER_URL} target={'_blank'}>
+          <ActionIcon icon={Book} placement={'right'} title={common.document} />
         </Link>
       )}
     </>

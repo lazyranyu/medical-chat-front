@@ -10,6 +10,8 @@ import { Flexbox } from "react-layout-kit"
 import { AsyncTaskStatus } from "@/types/asyncTask"
 
 import EmbeddingStatus from "./EmbeddingStatus"
+import components from "@/locales/default/components";
+import common from "@/locales/default/common";
 
 const useStyles = createStyles(({ css, token, isDarkMode }) => ({
     errorReason: css`
@@ -47,8 +49,8 @@ const FileParsingStatus = memo(
             case AsyncTaskStatus.Processing: {
                 return (
                     <Tooltip
-                        overlayStyle={{ pointerEvents: "none" }}
-                        title={t("FileParsingStatus.chunks.status.processingTip")}
+                        styles={{ root: { pointerEvents: "none" } }}
+                        title={components.FileParsingStatus.chunks.status.processingTip}
                     >
                         <Tag
                             bordered={false}
@@ -57,7 +59,7 @@ const FileParsingStatus = memo(
                             icon={<Badge status={"processing"} />}
                             style={{ display: "flex", gap: 4 }}
                         >
-                            {t("FileParsingStatus.chunks.status.processing")}
+                            {components.FileParsingStatus.chunks.status.processing}
                         </Tag>
                     </Tooltip>
                 )
@@ -66,10 +68,10 @@ const FileParsingStatus = memo(
             case AsyncTaskStatus.Error: {
                 return (
                     <Tooltip
-                        overlayStyle={{ maxWidth: 340, pointerEvents: "none" }}
+                        styles={{ root: { maxWidth: 340, pointerEvents: "none" } }}
                         title={
                             <Flexbox gap={4}>
-                                {t("FileParsingStatus.chunks.status.errorResult")}
+                                {components.FileParsingStatus.chunks.status.errorResult}
                                 {chunkingError && (
                                     <Flexbox className={styles.errorReason}>
                                         [{chunkingError.name}]:{" "}
@@ -83,14 +85,14 @@ const FileParsingStatus = memo(
                         }
                     >
                         <Tag bordered={false} className={className} color={"error"}>
-                            {t("FileParsingStatus.chunks.status.error")}{" "}
+                            {components.FileParsingStatus.chunks.status.error}{" "}
                             <Icon
                                 icon={RotateCwIcon}
                                 onClick={() => {
                                     onErrorClick?.("chunking")
                                 }}
                                 style={{ cursor: "pointer" }}
-                                title={t("retry", { ns: "common" })}
+                                title={common.retry}
                             />
                         </Tag>
                     </Tooltip>
@@ -103,8 +105,8 @@ const FileParsingStatus = memo(
                     return (
                         <Flexbox horizontal>
                             <Tooltip
-                                overlayStyle={{ pointerEvents: "none" }}
-                                title={t("FileParsingStatus.chunks.embeddingStatus.empty")}
+                                styles={{ root: { pointerEvents: "none" } }}
+                                title={components.FileParsingStatus.chunks.embeddingStatus.empty}
                             >
                                 <Tag
                                     bordered={false}
@@ -139,7 +141,7 @@ const FileParsingStatus = memo(
                                                 }}
                                                 type={"link"}
                                             >
-                                                {t("FileParsingStatus.chunks.embeddings")}
+                                                {components.FileParsingStatus.chunks.embeddings}
                                             </Button>
                                         )}
                                 </Tag>

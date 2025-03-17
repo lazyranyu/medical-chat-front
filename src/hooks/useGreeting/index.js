@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { parseGreetingTime } from "./greetingTime"
-
+import welcome from "@/locales/default/welcome";
 export const useGreeting = () => {
   const { t } = useTranslation("welcome")
 
@@ -12,5 +12,5 @@ export const useGreeting = () => {
     setGreeting(parseGreetingTime())
   }, [])
 
-  return greeting && t(`guide.welcome.${greeting}`)
+  return greeting && welcome.guide.welcome[greeting]
 }

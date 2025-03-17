@@ -19,6 +19,23 @@ export const createPortalSlice = (set, get) => ({
     },
 
     /**
+     * 打开线程在 Portal 中
+     * @param {string} threadId - 线程ID
+     * @param {string} [sourceMessageId] - 源消息ID
+     */
+    openThreadInPortal: (threadId, sourceMessageId) => {
+        get().togglePortal(true);
+        set({ portalThreadId: threadId }, false, 'openThreadInPortal');
+    },
+
+    /**
+     * 关闭线程 Portal
+     */
+    closeThreadPortal: () => {
+        set({ portalThreadId: undefined }, false, 'closeThreadPortal');
+    },
+
+    /**
      * 打开 Artifact
      * @param {Object} artifact - Artifact 对象
      * @param {string} artifact.id - 消息ID

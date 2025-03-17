@@ -68,7 +68,7 @@ export const ModelInfoTags = memo(
             >
                 {model.files && (
                     <Tooltip
-                        overlayStyle={{ pointerEvents: "none" }}
+                        styles={{ root: { pointerEvents: "none" } }}
                         placement={placement}
                         title={t("ModelSelect.featureTag.file")}
                     >
@@ -83,7 +83,7 @@ export const ModelInfoTags = memo(
                 )}
                 {model.vision && (
                     <Tooltip
-                        overlayStyle={{ pointerEvents: "none" }}
+                        styles={{ root: { pointerEvents: "none" } }}
                         placement={placement}
                         title={t("ModelSelect.featureTag.vision")}
                     >
@@ -98,7 +98,7 @@ export const ModelInfoTags = memo(
                 )}
                 {model.functionCall && (
                     <Tooltip
-                        overlayStyle={{ maxWidth: "unset", pointerEvents: "none" }}
+                        styles={{ root: { maxWidth: "unset", pointerEvents: "none" } }}
                         placement={placement}
                         title={t("ModelSelect.featureTag.functionCall")}
                     >
@@ -113,7 +113,7 @@ export const ModelInfoTags = memo(
                 )}
                 {typeof model.contextWindowTokens === "number" && (
                     <Tooltip
-                        overlayStyle={{ maxWidth: "unset", pointerEvents: "none" }}
+                        styles={{ root: { maxWidth: "unset", pointerEvents: "none" } }}
                         placement={placement}
                         title={t("ModelSelect.featureTag.tokens", {
                             tokens:

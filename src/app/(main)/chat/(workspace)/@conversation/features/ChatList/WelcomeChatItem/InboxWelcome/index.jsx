@@ -12,6 +12,7 @@ import { useGreeting } from "@/hooks/useGreeting"
 
 import AgentsSuggest from "./AgentsSuggest"
 import QuestionSuggest from "./QuestionSuggest"
+import welcome from "@/locales/default/welcome";
 
 const useStyles = createStyles(({ css, responsive }) => ({
   container: css`
@@ -39,7 +40,6 @@ const useStyles = createStyles(({ css, responsive }) => ({
 }))
 
 const InboxWelcome = memo(() => {
-  const { t } = useTranslation("welcome")
   const { styles } = useStyles()
   const greeting = useGreeting()
 
@@ -56,12 +56,7 @@ const InboxWelcome = memo(() => {
             <h1 className={styles.title}>{greeting}</h1>
           </Flexbox>
           <Markdown className={styles.desc} variant={"chat"}>
-            {t(
-                     "guide.defaultMessageWithoutCreate",
-                {
-                  appName: BRANDING_NAME
-                }
-            )}
+            {welcome.guide.defaultMessageWithoutCreate.replace("{{appName}}", BRANDING_NAME)}
           </Markdown>
           { (
               <>

@@ -1,13 +1,13 @@
 import React, { memo } from "react"
 
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors } from "@/store/chat/selectors"
 
 import InboxWelcome from "./InboxWelcome"
 import WelcomeMessage from "./WelcomeMessage"
 
 const WelcomeChatItem = memo(() => {
-  const showInboxWelcome = useChatStore(chatSelectors.showInboxWelcome)
+  const showInboxWelcome = useChatStore(messageSelectors.showInboxWelcome)
 
   if (showInboxWelcome) return <InboxWelcome />
 

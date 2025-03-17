@@ -1,11 +1,12 @@
-import { GridShowcase } from "@lobehub/ui"
 import { Flexbox } from "react-layout-kit"
 
 import { ORG_NAME } from "@/const/branding"
 import { isCustomORG } from "@/const/version"
 import Follow from "@/features/Follow"
+import GridShowcaseClient from "./GridShowcaseClient"
+import YearDisplay from "./YearDisplay"
 
-const COPYRIGHT = `© ${new Date().getFullYear()} ${ORG_NAME}`
+// 使用固定年份或在客户端渲染时设置
 
 const DesktopLayout = ({ children }) => {
     return (
@@ -19,15 +20,15 @@ const DesktopLayout = ({ children }) => {
                 width={"100%"}
             >
                 <div />
-                <GridShowcase
+                <GridShowcaseClient
                     innerProps={{ gap: 24 }}
                     style={{ maxHeight: "calc(100% - 104px)", maxWidth: 1024 }}
                     width={"100%"}
                 >
                     {children}
-                </GridShowcase>
+                </GridShowcaseClient>
                 <Flexbox align={"center"} horizontal justify={"space-between"}>
-                    <span style={{ opacity: 0.5 }}>{COPYRIGHT}</span>
+                    <YearDisplay orgName={ORG_NAME} />
                     {isCustomORG ? <div /> : <Follow />}
                 </Flexbox>
             </Flexbox>

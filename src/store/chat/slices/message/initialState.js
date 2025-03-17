@@ -1,40 +1,15 @@
 /**
- * 消息相关初始状态
+ * 聊天消息切片 - 初始状态
+ * 
+ * 定义了消息管理相关的初始状态
+ * 这些状态用于跟踪消息的加载、编辑和存储状态
  */
+
 export const initialMessageState = {
-    // 聊天消息列表
-    messages: [],
-
-    // 输入框消息
-    inputMessage: '',
-
-    // 是否有上传的文件
-    hasUploadedFiles: false,
-    
-    // 消息是否已初始化
-    messagesInit: true,
-    
-    // 活动会话ID
-    activeId: 'inbox',
-    
-    // 活动主题ID
-    activeTopicId: undefined,
-    
-    // 消息映射表，用于存储不同会话和主题的消息
-    messagesMap: {},
-    
-    // 正在编辑的消息ID列表
-    messageEditingIds: [],
-    
-    // 正在加载的消息ID列表
-    messageLoadingIds: [],
-    
-    // 正在生成的消息ID列表
-    chatLoadingIds: [],
-    
-    // 正在RAG流程中的消息ID列表
-    messageRAGLoadingIds: [],
-    
-    // AI是否正在生成回复
-    isAIGenerating: false,
-};
+  activeId: "inbox", // 当前活动的消息ID，默认为收件箱
+  isCreatingMessage: false, // 是否正在创建新消息的标志
+  messageEditingIds: [], // 正在编辑中的消息ID列表
+  messageLoadingIds: [], // 正在加载中的消息ID列表
+  messagesInit: false, // 消息是否已初始化的标志
+  messagesMap: {} // 消息映射表，以ID为键存储所有消息
+}

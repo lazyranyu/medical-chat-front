@@ -18,6 +18,7 @@ export const generateMetadata = async () => {
 }
 
 const Page = async () => {
+
     const ld = ldModule.generate({
         description: metadate.welcome.description.replace(/appName/g, BRANDING_NAME),
         title: metadate.welcome.title,

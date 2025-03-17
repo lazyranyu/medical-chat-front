@@ -5,11 +5,11 @@ import { memo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useStyles } from "./style"
+import chat from "@/locales/default/chat";
 
 const BackBottom = memo(({ visible, onScrollToBottom }) => {
   const { styles, cx } = useStyles()
 
-  const { t } = useTranslation("chat")
 
   return (
       <Button
@@ -18,7 +18,7 @@ const BackBottom = memo(({ visible, onScrollToBottom }) => {
           onClick={onScrollToBottom}
           size={"small"}
       >
-        {t("backToBottom", { defaultValue: "Back to bottom" })}
+        {chat.backToBottom}
       </Button>
   )
 })

@@ -7,6 +7,7 @@ import { Flexbox } from "react-layout-kit"
 import FileParsingStatus from "@/components/FileParsingStatus"
 
 import UploadStatus from "./UploadStatus"
+import chat from "@/locales/default/chat";
 
 const useStyles = createStyles(({ css }) => ({
     status: css`
@@ -18,7 +19,6 @@ const useStyles = createStyles(({ css }) => ({
 }))
 
 const UploadDetail = memo(({ uploadState, status, size, tasks }) => {
-    const { t } = useTranslation("chat")
     const { styles } = useStyles()
 
     return (
@@ -26,7 +26,7 @@ const UploadDetail = memo(({ uploadState, status, size, tasks }) => {
             <UploadStatus size={size} status={status} uploadState={uploadState} />
             {!!tasks && Object.keys(tasks).length === 0 ? (
                 <Typography.Text style={{ fontSize: 12 }} type={"secondary"}>
-                    {t("upload.preview.prepareTasks")}
+                    {chat.upload.preview.prepareTasks}
                 </Typography.Text>
             ) : (
                 <div>

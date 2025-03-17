@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 import { Center, Flexbox } from "react-layout-kit"
 
 import { getContainer, useDragUpload } from "./useDragUpload"
+import components from "@/locales/default/components";
 
 const BLOCK_SIZE = 64
 const ICON_SIZE = 36
@@ -122,16 +123,10 @@ const DragUpload = memo(({ enabledFiles = true, onUploadFiles }) => {
                     </Flexbox>
                     <Flexbox align={"center"} gap={8} style={{ textAlign: "center" }}>
                         <Flexbox className={styles.title}>
-                            {t(
-                                enabledFiles
-                                    ? "DragUpload.dragFileTitle"
-                                    : "DragUpload.dragTitle"
-                            )}
+                            {components.DragUpload.dragTitle}
                         </Flexbox>
                         <Flexbox className={styles.desc}>
-                            {t(
-                                enabledFiles ? "DragUpload.dragFileDesc" : "DragUpload.dragDesc"
-                            )}
+                            {components.DragUpload.dragDesc}
                         </Flexbox>
                     </Flexbox>
                 </Center>

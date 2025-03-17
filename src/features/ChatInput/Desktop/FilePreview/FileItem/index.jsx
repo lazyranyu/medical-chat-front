@@ -11,6 +11,7 @@ import { useFileStore, fileStableSelectors } from "@/store"
 import UploadDetail from "../../../components/UploadDetail"
 import Content from "./Content"
 import { FILE_ITEM_SIZE } from "./style"
+import common from "@/locales/default/common";
 
 const useStyles = createStyles(({ css, token }) => ({
     actions: css`
@@ -53,15 +54,16 @@ const spacing = 8
 // };
 
 const FileItem = memo(props => {
-    const { file, uploadState, status, id, tasks } = props
+    const { file, uploadState, status, id, tasks, previewUrl } = props
     const { t } = useTranslation(["chat", "common"])
     const { styles } = useStyles()
     
     // 使用稳定的选择器获取删除函数
     const removeChatUploadFile = useFileStore(fileStableSelectors.getRemoveChatUploadFile)
     
-    // 替换原有状态获取
-    // const [removeChatUploadFile] = [staticRemoveChatUploadFile];
+    // 确保状态有默认值
+    const currentStatus = status || 'success'
+    const currentUploadState = uploadState || { progress: 100, speed: 0, restTime: 0 }
 
     return (
         <Flexbox className={styles.container} distribution={"space-between"}>
@@ -75,9 +77,9 @@ const FileItem = memo(props => {
 
                 <UploadDetail
                     size={file?.size || 0}
-                    status={status}
+                    status={currentStatus}
                     tasks={tasks}
-                    uploadState={uploadState}
+                    uploadState={currentUploadState}
                 />
             </Flexbox>
             <Flexbox className={styles.actions}>
@@ -88,7 +90,7 @@ const FileItem = memo(props => {
                         removeChatUploadFile(id)
                     }}
                     size={"small"}
-                    title={t("delete", { ns: "common" })}
+                    title={common.delete}
                 />
             </Flexbox>
         </Flexbox>

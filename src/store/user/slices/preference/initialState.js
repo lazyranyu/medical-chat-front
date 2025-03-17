@@ -21,5 +21,11 @@ export const initialPreferenceState = {
         
         // 主色：blue, green, purple, etc.
         primaryColor: 'blue',
+        
+        // 主题显示模式：byTime, flat
+        topicDisplayMode: 'byTime',
+        guide: {
+            topic: true,
+        },
     },
 };

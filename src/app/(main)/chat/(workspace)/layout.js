@@ -1,4 +1,4 @@
-import { Flexbox } from "react-layout-kit"
+    import { Flexbox } from "react-layout-kit"
 
 import ChatHeader from "./_layout/ChatHeader"
 // import HotKeys from "./HotKeys"

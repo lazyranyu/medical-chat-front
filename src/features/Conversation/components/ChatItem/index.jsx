@@ -9,7 +9,7 @@ import { Flexbox } from "react-layout-kit"
 import { useAgentStore } from "@/store/agent"
 import {agentSelectors} from "@/store/agent/selectors"
 import { useChatStore } from "@/store/chat"
-import { chatSelectors } from "@/store/chat/selectors"
+import { messageSelectors } from "@/store/chat/selectors"
 import { useUserStore } from "@/store/user"
 import { userGeneralSettingsSelectors } from "@/store/user/selectors"
 
@@ -25,6 +25,7 @@ import History from "../History"
 import { markdownElements } from "../MarkdownElements"
 import { InPortalThreadContext } from "./InPortalThreadContext"
 import { normalizeThinkTags, processWithArtifact } from "./utils"
+import common from "@/locales/default/common";
 
 const rehypePlugins = markdownElements
     .map(element => element.rehypePlugin)
@@ -56,7 +57,7 @@ const Item = memo(
          disableEditing,
          inPortalThread = false
      }) => {
-        const { t } = useTranslation("common")
+
         const { styles, cx } = useStyles()
 
         const [type = 'chat'] = useAgentStore((s) => {
@@ -64,7 +65,7 @@ const Item = memo(
             return [config.displayMode];
         });
 
-        const item = useChatStore(chatSelectors.getMessageById(id), isEqual)
+        const item = useChatStore(messageSelectors.getMessageById(id), isEqual)
         const fontSize = useUserStore(userGeneralSettingsSelectors.fontSize)
 
         const [
@@ -75,10 +76,10 @@ const Item = memo(
             toggleMessageEditing,
             updateMessageContent
         ] = useChatStore(s => [
-            chatSelectors.isMessageLoading(id)(s),
-            chatSelectors.isMessageGenerating(id)(s),
-            chatSelectors.isMessageInRAGFlow(id)(s),
-            chatSelectors.isMessageEditing(id)(s),
+            messageSelectors.isMessageLoading(id)(s),
+            messageSelectors.isMessageGenerating(id)(s),
+            messageSelectors.isMessageInRAGFlow(id)(s),
+            messageSelectors.isMessageEditing(id)(s),
             s.toggleMessageEditing,
             s.modifyMessageContent
         ])
@@ -216,11 +217,10 @@ const Item = memo(
 
         const text = useMemo(
             () => ({
-                cancel: t("cancel"),
-                confirm: t("ok"),
-                edit: t("edit")
-            }),
-            [t]
+                cancel: common.cancel,
+                confirm: common.ok,
+                edit: common.edit
+            })
         )
 
         const onEditingChange = useCallback(edit => {

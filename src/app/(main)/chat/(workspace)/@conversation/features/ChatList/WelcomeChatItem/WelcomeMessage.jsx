@@ -7,10 +7,9 @@ import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
 import { useChatStore } from '@/store/chat';
 import {DEFAULT_AVATAR, DEFAULT_BACKGROUND_COLOR, DEFAULT_INBOX_AVATAR} from "@/const/meta";
-import {t} from "i18next";
+import chat from "@/locales/default/chat";
 
 const WelcomeMessage = () => {
-  const { t } = useTranslation('chat');
   const [type = 'chat'] = useAgentStore((s) => {
     const config = agentSelectors.currentAgentChatConfig(s);
     return [config.displayMode];
@@ -19,20 +18,20 @@ const WelcomeMessage = () => {
   const meta = {
     avatar: DEFAULT_INBOX_AVATAR,
     backgroundColor: DEFAULT_BACKGROUND_COLOR,
-    description: t('inbox.desc', { ns: 'chat' }),
-    title: t('inbox.title', { ns: 'chat' }),
+    description: chat.inbox.desc,
+    title: chat.inbox.title,
   };
   const activeId = useChatStore((s) => s.activeId);
 
-  const agentSystemRoleMsg = t('agentDefaultMessageWithSystemRole', {
-    name: meta.title || t('defaultAgent'),
-    systemRole: meta.description,
-  });
 
-  const agentMsg = t('agentDefaultMessageWithoutEdit', {
-    name: meta.title || t('defaultAgent'),
-    url: `/chat/settings?session=${activeId}`,
-  });
+  const agentSystemRoleMsg = chat.agentDefaultMessageWithSystemRole
+      .replace(/name/g,meta.title)
+      .replace(/systemRole/g, meta.description)
+
+  const agentMsg =chat.agentDefaultMessageWithoutEdit
+      .replace(/name/g,meta.title)
+      .replace(/url/g,`/chat/settings?session=${activeId}`)
+
 
   return (
     <ChatItem
