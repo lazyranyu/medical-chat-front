@@ -4,18 +4,15 @@ import { INBOX_SESSION_ID } from '@/const/session';
 import { apiClient, fetcher } from '../apiClient';
 
 // 辅助函数
-const toDbSessionId = (sessionId) => {
-    return sessionId === INBOX_SESSION_ID ? null : sessionId;
-};
 
 // 直接导出服务对象
 export const topicService = {
     createTopic: async (params) => {
         const response = await apiClient.post('/topic/create', {
             ...params,
-            sessionId: toDbSessionId(params.sessionId),
         });
-        return response.data;
+
+        return response.data.data;
     },
 
     batchCreateTopics: async (importTopics) => {
@@ -32,7 +29,6 @@ export const topicService = {
         const response = await apiClient.get('/topic/getTopics', {
             params: {
                 ...params,
-                sessionId: toDbSessionId(params.sessionId),
             },
         });
         return response.data;
@@ -55,11 +51,10 @@ export const topicService = {
         return response.data;
     },
 
-    searchTopics: async (keywords, sessionId) => {
+    searchTopics: async (keywords) => {
         const response = await apiClient.get('/topic/search', {
             params: {
                 keywords,
-                sessionId: toDbSessionId(sessionId),
             },
         });
         return response.data;
@@ -75,13 +70,6 @@ export const topicService = {
         return response.data;
     },
 
-    removeTopics: async (sessionId) => {
-        const response = await apiClient.post('/topic/removeBySession', {
-            id: toDbSessionId(sessionId)
-        });
-        return response.data;
-    },
-
     batchRemoveTopics: async (topics) => {
         const response = await apiClient.post('/topic/batchRemove', { ids: topics });
         return response.data;
@@ -94,11 +82,7 @@ export const topicService = {
 };
 
 // SWR Hooks
-export const useTopics = (params) => {
-    const sessionId = params?.sessionId;
-    const key = sessionId ? `/topic/getTopics?sessionId=${sessionId}${params.current ? `&current=${params.current}` : ''}${params.pageSize ? `&pageSize=${params.pageSize}` : ''}` : null;
-    return useSWR(key, fetcher);
-};
+
 
 export const useAllTopics = () => {
     return useSWR('/topic/getAllTopics', fetcher);
@@ -124,9 +108,4 @@ export const useTopicCount = (params) => {
 export const useTopicRanking = (limit) => {
     const queryString = limit ? `/topic/rank?limit=${limit}` : '/topic/rank';
     return useSWR(queryString, fetcher);
-};
-
-export const useSearchTopics = (keywords, sessionId) => {
-    const key = keywords ? `/topic/search?keywords=${encodeURIComponent(keywords)}${sessionId ? `&sessionId=${sessionId}` : ''}` : null;
-    return useSWR(key, fetcher);
 };

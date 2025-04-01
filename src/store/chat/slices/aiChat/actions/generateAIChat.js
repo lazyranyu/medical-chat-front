@@ -20,7 +20,6 @@ import { messageService} from "@/api/message";
 import { useAgentStore } from "@/store/agent"
 import { chatHelpers } from "@/store/chat/helpers"
 import { messageMapKey } from "@/store/chat/utils/messageMapKey"
-import { useSessionStore } from "@/store/session"
 import { setNamespace } from "@/utils/storeDebug"
 
 import { messageSelectors, topicSelectors } from "../../../selectors"
@@ -113,7 +112,7 @@ export const generateAIChat = (set, get) => ({
 
     // 如果消息为空且没有文件，则退出
     if (!message && !hasFile) return
-
+    console.log("sendMessage11", message, files)
     set({ isCreatingMessage: true }, false, n("creatingMessage/start"))
 
     const newMessage = {
@@ -121,12 +120,11 @@ export const generateAIChat = (set, get) => ({
       // 如果消息附带文件，则添加文件到消息和Agent
       files: fileIdList,
       role: "user",
-      sessionId: activeId,
       // 如果有活跃话题ID，则添加到消息中
       topicId: activeTopicId,
       threadId: activeThreadId
     }
-
+    console.log('sendMessage1', newMessage);
     const agentConfig = getAgentChatConfig()
 
     let tempMessageId = undefined
@@ -152,9 +150,7 @@ export const generateAIChat = (set, get) => ({
         // 创建临时消息用于乐观更新
         tempMessageId = get().internal_createTmpMessage(newMessage)
         get().internal_toggleMessageLoading(true, tempMessageId)
-
         const topicId = await get().createTopic()
-
         if (topicId) {
           newTopicId = topicId
           newMessage.topicId = topicId
@@ -172,15 +168,13 @@ export const generateAIChat = (set, get) => ({
         }
       }
     }
-    // 更新助手状态以使其重新排序
-    await useSessionStore.getState().triggerSessionUpdate(get().activeId)
 
     // 创建消息
-    const id = get().internal_createMessage(newMessage, {
+    const [id] = await Promise.all([get().internal_createMessage(newMessage, {
       tempMessageId,
       skipRefresh: !onlyAddUserMessage && newMessage.fileList?.length === 0
-    })
-
+    })])
+    console.log('internal_createMessage', id);
     // 如果有临时消息ID，关闭其加载状态
     if (tempMessageId) get().internal_toggleMessageLoading(false, tempMessageId)
 
@@ -211,7 +205,7 @@ export const generateAIChat = (set, get) => ({
     // 处理消息生成AI回复
     await internal_coreProcessMessage(messages, id, {
       isWelcomeQuestion,
-      ragQuery: get().internal_shouldUseRAG() ? message : undefined,
+      // ragQuery: get().internal_shouldUseRAG() ? message : undefined,
       threadId: activeThreadId
     })
 
@@ -267,14 +261,90 @@ export const generateAIChat = (set, get) => ({
     internal_toggleChatLoading(false, undefined, n("stopGenerateMessage"))
   },
 
-  // // 内部方法：AI消息处理核心方法（当前已注释）
-  // internal_coreProcessMessage: async (
-  //     originalMessages,
-  //     userMessageId,
-  //     params
-  // ) => {
-  // ... existing code ...
-  // },
+   // // 内部方法：AI消息处理核心方法（当前已注释）
+  internal_coreProcessMessage: async (originalMessages, userMessageId, params) => {
+    const { internal_fetchAIChatMessage, triggerToolCalls, refreshMessages, activeTopicId } = get();
+
+    // 创建新数组避免修改原消息数组
+    const messages = [...originalMessages];
+
+    const { model, provider, chatConfig } = getAgentConfig();
+
+    let fileChunks;
+    let ragQueryId;
+
+    // // 如果包含RAG查询标记，进入RAG流程
+    // if (params?.ragQuery) {
+    //   // 1. 从语义搜索获取相关文本块
+    //   const { chunks, queryId, rewriteQuery } = await get().internal_retrieveChunks(
+    //       userMessageId,
+    //       params?.ragQuery,
+    //       messages.map((m) => m.content).slice(0, messages.length - 1)
+    //   );
+    //
+    //   ragQueryId = queryId;
+    //
+    //   const lastMsg = messages.pop();
+    //
+    //   // 2. 构建检索上下文消息
+    //   const knowledgeBaseQAContext = knowledgeBaseQAPrompts({
+    //     chunks,
+    //     userQuery: lastMsg.content,
+    //     rewriteQuery,
+    //     knowledge: getAgentKnowledge()
+    //   });
+    //
+    //   // 3. 将检索上下文添加到消息历史
+    //   messages.push({
+    //     ...lastMsg,
+    //     content: (lastMsg.content + '\n\n' + knowledgeBaseQAContext).trim()
+    //   });
+    //
+    //   fileChunks = chunks.map((c) => ({ id: c.id, similarity: c.similarity }));
+    // }
+
+    // 2. 添加占位用的空助手消息
+    const assistantMessage = {
+      role: 'assistant',
+      content: LOADING_FLAT,
+      model: model,
+      provider: provider,
+
+      parentId: userMessageId,
+      sessionId: get().activeId,
+      topicId: activeTopicId,
+      threadId: params?.threadId,
+      fileChunks,
+      ragQueryId
+    };
+    const [assistantId] = await Promise.all([get().internal_createMessage(assistantMessage)]);
+
+    // 3. 获取AI响应
+    const { isFunctionCall } = await internal_fetchAIChatMessage(messages, assistantId, params);
+
+    // 4. 如果是函数调用消息，触发工具方法
+    if (isFunctionCall) {
+      await refreshMessages();
+      await triggerToolCalls(assistantId, {
+        threadId: params?.threadId,
+        inPortalThread: params?.inPortalThread
+      });
+    }
+
+    // 5. 当上下文消息超过历史限制时进行摘要
+    const historyCount =
+        chatConfig.historyCount || DEFAULT_AGENT_CHAT_CONFIG.historyCount;
+
+    if (
+        chatConfig.enableHistoryCount &&
+        chatConfig.enableCompressHistory &&
+        originalMessages.length > historyCount
+    ) {
+      const historyMessages = originalMessages.slice(0, -historyCount + 1);
+      await get().internal_summaryHistory(historyMessages);
+    }
+  },
+
 
   /**
    * 内部方法：获取AI聊天消息
@@ -358,7 +428,7 @@ export const generateAIChat = (set, get) => ({
     // 获取当前活跃话题摘要
     const historySummary = topicSelectors.currentActiveTopicSummary(get())
     
-    // 以下是调用聊天服务创建助手消息流的代码，当前已注释
+    // 以下是调用聊天服务创建助手消息流的代码
     await chatService.createAssistantMessageStream({
       abortController,
       params: {
@@ -371,7 +441,6 @@ export const generateAIChat = (set, get) => ({
       historySummary: historySummary?.content,
       trace: {
         traceId: params?.traceId,
-        sessionId: get().activeId,
         topicId: get().activeTopicId,
         traceName: TraceNameMap.Conversation,
       },

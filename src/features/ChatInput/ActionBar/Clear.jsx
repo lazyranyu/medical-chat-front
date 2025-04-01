@@ -21,10 +21,9 @@ import chat from "@/locales/default/chat";
 // };
 const Clear = memo(() => {
     const { t } = useTranslation("setting")
-    
-    // 直接从 store 中获取方法，不使用选择器
-    const clearMessage = useChatStore(state => state.clearMessage)
-    const clearImageList = useFileStore(state => state.clearChatUploadFileList)
+
+    const [clearMessage] = useChatStore((s) => [s.clearMessage]);
+    const [clearImageList] = useFileStore((s) => [s.clearChatUploadFileList]);
     
     const [confirmOpened, updateConfirmOpened] = useState(false)
 

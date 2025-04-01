@@ -1,11 +1,11 @@
 import { memo } from "react"
 
 import DragUpload from "@/components/DragUpload"
-import { useAgentStore } from '@/store/agent';
-import { agentSelectors } from '@/store/agent';
-import { useFileStore } from '@/store';
-import { useUserStore } from '@/store/user';
-import { modelProviderSelectors } from '@/store/user/selectors';
+// import { useAgentStore } from '@/store/agent';
+// import { agentSelectors } from '@/store/agent';
+import { useFileStore } from '@/store/file';
+// import { useUserStore } from '@/store/user';
+// import { modelProviderSelectors } from '@/store/user/selectors';
 
 import FileItemList from "./FileList"
 

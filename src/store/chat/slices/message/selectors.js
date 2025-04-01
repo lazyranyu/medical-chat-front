@@ -10,8 +10,6 @@ import { INBOX_SESSION_ID } from "@/const/session" // 收件箱会话ID常量
 import { useAgentStore } from "@/store/agent" // 代理状态管理hook
 import { agentSelectors } from "@/store/agent/selectors" // 代理选择器
 import { messageMapKey } from "@/store/chat/utils/messageMapKey" // 消息映射键生成工具
-import { useSessionStore } from "@/store/session" // 会话状态管理hook
-import { sessionMetaSelectors } from "@/store/session/selectors" // 会话元数据选择器
 import { useUserStore } from "@/store/user" // 用户状态管理hook
 import { userProfileSelectors } from "@/store/user/selectors" // 用户资料选择器
 
@@ -39,11 +37,6 @@ const getMeta = message => {
       // 系统消息使用消息自带的元数据
       return message.meta
     }
-
-    default: {
-      // 其他消息（如AI助手）使用当前代理的元数据
-      return sessionMetaSelectors.currentAgentMeta(useSessionStore.getState())
-    }
   }
 }
 
@@ -55,8 +48,7 @@ const getMeta = message => {
  * @returns {string} 消息映射键
  */
 const currentChatKey = s => {
-
-  return messageMapKey(s.activeId, s.activeTopicId)
+  return messageMapKey(s.activeTopicId)
 }
 
 /**
@@ -71,7 +63,6 @@ const activeBaseChats = s => {
 
   // 获取当前会话和话题的消息
   const messages = s.messagesMap[currentChatKey(s)] || []
-
   // 为每个消息添加元数据
   return messages.map(i => ({ ...i, meta: getMeta(i) }))
 }
@@ -299,7 +290,7 @@ const currentChatLoadingState = s => !s.messagesInit
  * @returns {boolean} 是否已加载
  */
 const isCurrentChatLoaded = (s) =>{
-  console.log("isCurrentChatLoaded",!!s.messagesMap[currentChatKey(s)])
+  console.log("isCurrentChatLoaded",currentChatKey(s))
   return  !!s.messagesMap[currentChatKey(s)]
 }
 

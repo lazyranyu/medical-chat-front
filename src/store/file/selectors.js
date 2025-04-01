@@ -1,9 +1,10 @@
-import { uploadSelectors } from './slices/upload/selectors';
+import { filesSelectors as imageFilesSelectors } from "./slices/chat"
+// import { ttsFilesSelectors } from "./slices/tts"
 
-/**
- * 文件状态选择器
- * 合并上传相关的选择器
- */
-export const fileChatSelectors = {
-    ...uploadSelectors,
-};
+export const filesSelectors = {
+  ...imageFilesSelectors,
+  // ...ttsFilesSelectors
+}
+
+export { fileChatSelectors } from "./slices/chat/selectors"
+// export * from "./slices/fileManager/selectors"

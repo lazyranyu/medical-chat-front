@@ -6,7 +6,7 @@ import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Center, Flexbox } from "react-layout-kit"
 
-import { useFileStore, fileStableSelectors } from "@/store"
+import { useFileStore, fileStableSelectors } from "@/store/file"
 
 import UploadDetail from "../../../components/UploadDetail"
 import Content from "./Content"
@@ -59,11 +59,7 @@ const FileItem = memo(props => {
     const { styles } = useStyles()
     
     // 使用稳定的选择器获取删除函数
-    const removeChatUploadFile = useFileStore(fileStableSelectors.getRemoveChatUploadFile)
-    
-    // 确保状态有默认值
-    const currentStatus = status || 'success'
-    const currentUploadState = uploadState || { progress: 100, speed: 0, restTime: 0 }
+    const [removeChatUploadFile] = useFileStore((s) => [s.removeChatUploadFile]);
 
     return (
         <Flexbox className={styles.container} distribution={"space-between"}>
@@ -75,12 +71,7 @@ const FileItem = memo(props => {
                     {file?.name || '未命名文件'}
                 </Typography.Text>
 
-                <UploadDetail
-                    size={file?.size || 0}
-                    status={currentStatus}
-                    tasks={tasks}
-                    uploadState={currentUploadState}
-                />
+                <UploadDetail size={file.size} status={status} tasks={tasks} uploadState={uploadState} />
             </Flexbox>
             <Flexbox className={styles.actions}>
                 <ActionIcon

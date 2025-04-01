@@ -14,7 +14,6 @@ const Content = memo(() => {
   useFetchMessages()
   const data = useChatStore(messageSelectors.mainDisplayChatIDs)
 
-  console.log('data',data)
   const itemContent = useCallback(
       (index, id) => <MainChatItem id={id} index={index} />,
   )

@@ -34,7 +34,7 @@ const SWR_USE_FETCH_MESSAGES = "SWR_USE_FETCH_MESSAGES"
  * @returns {Object} 包含所有消息相关动作的对象
  */
 // 在顶部定义更语义化的 key 生成器
-const genMessagesKey = (sessionId, topicId) => [SWR_USE_FETCH_MESSAGES, sessionId, topicId];
+const genMessagesKey = (topicId) => [SWR_USE_FETCH_MESSAGES,  topicId];
 
 export const createMessageSlice = (set, get) => ({
   /**
@@ -144,7 +144,6 @@ export const createMessageSlice = (set, get) => ({
     await internal_createMessage({
       content: inputMessage,
       role: "assistant",
-      sessionId: activeId,
       // 如果有活动话题ID，则添加到消息中
       topicId: activeTopicId
     })
@@ -218,50 +217,33 @@ export const createMessageSlice = (set, get) => ({
    * 使用SWR获取消息
    * 当启用时，会自动获取并更新消息列表
    *
-   * @param {boolean} enable - 是否启用
-   * @param {string} sessionId - 会话ID
    * @param {string} activeTopicId - 活动话题ID
    * @returns {Object} SWR响应对象
    */
-  // useFetchMessages: (enable, sessionId, activeTopicId) =>
-  //     useClientDataSWR(
-  //         enable ? [SWR_USE_FETCH_MESSAGES, sessionId, activeTopicId] : null,
-  //         async ([, sessionId, topicId]) =>
-  //             messageService.getMessages(sessionId, topicId),
-  //         {
-  //           onSuccess: (messages, key) => {
-  //             const nextMap = {
-  //               ...get().messagesMap,
-  //               [messageMapKey(sessionId, activeTopicId)]: messages
-  //             }
-  //             console.log('sessionId', sessionId);
-  //             console.log('activeTopicId', activeTopicId);
-  //             // 如果消息已初始化且映射没有变化，不需要更新
-  //             if (get().messagesInit && isEqual(nextMap, get().messagesMap)) return
-  //
-  //             set(
-  //                 { messagesInit: true, messagesMap: nextMap },
-  //                 false,
-  //                 n("useFetchMessages", { messages, queryKey: key })
-  //             )
-  //           }
-  //         }
-  //     ),
-  useFetchMessages: (enable, sessionId, activeTopicId) =>{
-    const mapKey = messageMapKey(sessionId, activeTopicId)
-    const messages = get().messagesMap[mapKey] || []
-    const nextMap = {
-      ...get().messagesMap,
-      [messageMapKey('inbox', activeTopicId)]: messages
-    }
-    const key = [SWR_USE_FETCH_MESSAGES, sessionId, activeTopicId];
-    console.log('sessionId', sessionId);
-    console.log('key', key);
-    set(
-        { messagesInit: true, messagesMap: nextMap },
-        false,
-        n('useFetchMessages', { messages, queryKey: key }),
-    );
+  useFetchMessages: ( activeTopicId) => {
+    // useClientDataSWR返回一个函数，需要执行这个函数才能触发SWR
+    useClientDataSWR(
+        genMessagesKey( activeTopicId),
+        async ([, topicId]) =>
+            messageService.getMessages(topicId),
+        {
+          onSuccess: (messages, key) => {
+            const nextMap = {
+              ...get().messagesMap,
+              [messageMapKey(activeTopicId)]: messages
+            }
+            console.log("useFetchMessages(success)", nextMap )
+            // 如果消息已初始化且映射没有变化，不需要更新
+            if (get().messagesInit && isEqual(nextMap, get().messagesMap)) return
+
+            set(
+                { messagesInit: true, messagesMap: nextMap },
+                false,
+                n("useFetchMessages", { messages, queryKey: key })
+            )
+          }
+        }
+    )()  // 添加括号执行返回的函数
   },
 
   /**
@@ -383,6 +365,7 @@ export const createMessageSlice = (set, get) => ({
     }
 
     internal_toggleMessageLoading(false, tempId)
+
     return id
   },
 
@@ -392,7 +375,6 @@ export const createMessageSlice = (set, get) => ({
    */
   internal_fetchMessages: async () => {
     const messages = await messageService.getMessages(
-        get().activeId,
         get().activeTopicId
     )
     const nextMap = {

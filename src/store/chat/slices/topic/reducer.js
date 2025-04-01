@@ -26,9 +26,6 @@ export const topicReducer = (state = [], payload) => {
           createdAt: Date.now(), // 创建时间戳
           favorite: false, // 默认非收藏状态
           id: payload.value.id ?? Date.now().toString(), // 使用提供的ID或生成新ID
-          sessionId: payload.value.sessionId
-              ? payload.value.sessionId
-              : undefined, // 关联的会话ID
           updatedAt: Date.now() // 更新时间戳
         })
 

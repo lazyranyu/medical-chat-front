@@ -16,7 +16,6 @@ const ChatConversation = () => {
     return (
         <>
             <ChatList />
-            <Button type="primary" onClick={()=>sayHello("medical")}>Primary</Button>
             <ChatInput />
         </>
     );

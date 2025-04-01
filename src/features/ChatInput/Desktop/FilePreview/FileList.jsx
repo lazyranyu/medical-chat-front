@@ -3,7 +3,7 @@ import { lighten } from "polished"
 import {memo, useEffect} from "react"
 import { Flexbox } from "react-layout-kit"
 
-import { fileStableSelectors, useFileStore } from "@/store"
+import { fileChatSelectors, useFileStore } from "@/store/file"
 
 import FileItem from "./FileItem"
 
@@ -20,10 +20,8 @@ const useStyles = createStyles(({ css, token }) => ({
 }))
 
 const FileList = memo(() => {
-    // 使用稳定的选择器获取文件列表
-    const inputFilesList = useFileStore(fileStableSelectors.getChatUploadFileList)
-    // 判断是否有文件
-    const showFileList = inputFilesList.length > 0
+    const inputFilesList = useFileStore(fileChatSelectors.chatUploadFileList);
+    const showFileList = useFileStore(fileChatSelectors.chatUploadFileListHasItem);
     
     // 调试输出文件列表
     useEffect(() => {

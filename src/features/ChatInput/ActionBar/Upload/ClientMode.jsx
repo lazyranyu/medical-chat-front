@@ -5,7 +5,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAgentStore, agentSelectors } from '@/store/agent';
-import { useFileStore, fileStableSelectors } from '@/store';
+import { useFileStore } from '@/store/file';
 import { useUserStore } from '@/store/user';
 import { modelProviderSelectors } from '@/store/user/selectors';
 import chat from "@/locales/default/chat";
@@ -19,7 +19,7 @@ const staticUploadFiles = async (files) => {
 };
 const FileUpload = memo(() => {
     // 使用稳定的选择器获取上传函数
-    const upload = useFileStore(fileStableSelectors.getUploadChatFiles);
+    const upload = useFileStore((s) => s.uploadChatFiles);
 
     // 使用静态模型值
     const model = 'gpt-4';

@@ -17,14 +17,14 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'text/event-stream',
+                'Accept': 'text/event-stream'
             },
             body: JSON.stringify(data),
-            signal,
+            signal
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP错误! 状态: ${response.status}`);
         }
 
         const reader = response.body.getReader();
@@ -33,41 +33,38 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
 
         while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+                onComplete?.();
+                break;
+            }
 
             buffer += decoder.decode(value, { stream: true });
 
-            const lines = buffer.split('\n\n');
-            buffer = lines.pop() || '';
+            // 处理当前格式的数据块
+            const parts = buffer.split('"\\n\\n"');
+            buffer = parts.pop() || '';  // 保留未完成部分
 
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const data = line.slice(6);
-                    if (data === '[DONE]') {
-                        onComplete();
-                        return;
-                    }
-
+            for (const part of parts) {
+                if (part.startsWith('"data:"')) {
+                    // 提取data:"和"之间的内容
+                    const content = part.substring(8, part.length - 1); // 去掉data:"前缀和结尾的"
                     try {
-                        const parsedData = JSON.parse(data);
-                        onMessage(parsedData);
+                        // 直接使用内容，因为已经是字符串了
+                        onMessage?.({ content });
                     } catch (e) {
-                        console.error('解析消息失败:', e);
+                        console.error('解析错误:', e, content);
                     }
                 }
             }
         }
-
-        onComplete();
     } catch (error) {
         if (error.name === 'AbortError') {
-            // 请求被中止
-            return;
+            console.log('请求被中止');
+        } else {
+            onError?.(error);
         }
-        onError(error);
     }
 };
-
 /**
  * 聊天服务
  */
@@ -105,7 +102,7 @@ export const chatService = {
             };
 
             // 使用 fetch API 实现 SSE
-            await handleFetchSSE('/api/chat/stream', requestData, {
+            await handleFetchSSE('/api/hello', requestData, {
                 onMessage: onMessageHandle,
                 onError: onErrorHandle,
                 onComplete: onFinish,
@@ -152,7 +149,7 @@ export const chatService = {
         return response.data;
     },
     hello: async (name) => {
-        const response = await apiClient.get('/hello', {
+        const response = await apiClient.get('/message/hello', {
             params: {
                 name: name || 'unknown user' // 与后端defaultValue匹配
             },

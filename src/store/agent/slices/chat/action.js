@@ -7,8 +7,6 @@ import { INBOX_SESSION_ID } from "@/const/session"
 import { DEFAULT_AGENT_CONFIG } from "@/const/settings"
 import { useClientDataSWR, useOnlyFetchOnceSWR } from "@/libs/swr"
 // import { agentService } from "@/services/agent"
-import { sessionService} from "@/api/session";
-import { useSessionStore } from "@/store/session"
 import { merge } from "@/utils/merge"
 
 import { agentSelectors } from "./selectors"
@@ -71,9 +69,6 @@ export const createChatSlice = (set, get) => ({
     await internal_refreshAgentKnowledge()
   },
 
-  removePlugin: async id => {
-    await get().togglePlugin(id, false)
-  },
   toggleFile: async (id, open) => {
     const { activeAgentId, internal_refreshAgentConfig } = get()
     if (!activeAgentId) return
@@ -90,37 +85,6 @@ export const createChatSlice = (set, get) => ({
 
     await internal_refreshAgentConfig(get().activeId)
   },
-  togglePlugin: async (id, open) => {
-    const originConfig = agentSelectors.currentAgentConfig(get())
-
-    const config = produce(originConfig, draft => {
-      draft.plugins = produce(draft.plugins || [], plugins => {
-        const index = plugins.indexOf(id)
-        const shouldOpen = open !== undefined ? open : index === -1
-
-        if (shouldOpen) {
-          // 如果 open 为 true 或者 id 不存在于 plugins 中，则添加它
-          if (index === -1) {
-            plugins.push(id)
-          }
-        } else {
-          // 如果 open 为 false 或者 id 存在于 plugins 中，则移除它
-          if (index !== -1) {
-            plugins.splice(index, 1)
-          }
-        }
-      })
-    })
-
-    await get().updateAgentConfig(config)
-  },
-  updateAgentChatConfig: async config => {
-    const { activeId } = get()
-
-    if (!activeId) return
-
-    await get().updateAgentConfig({ chatConfig: config })
-  },
   updateAgentConfig: async config => {
     const { activeId } = get()
 
@@ -132,19 +96,6 @@ export const createChatSlice = (set, get) => ({
 
     await get().internal_updateAgentConfig(activeId, config, controller.signal)
   },
-  useFetchAgentConfig: sessionId =>
-      useClientDataSWR(
-          [FETCH_AGENT_CONFIG_KEY, sessionId],
-          ([, id]) => sessionService.getSessionConfig(id),
-          {
-            fallbackData: DEFAULT_AGENT_CONFIG,
-            onSuccess: data => {
-              get().internal_dispatchAgentMap(sessionId, data, "fetch")
-              set({ activeAgentId: data.id }, false, "updateActiveAgentId")
-            },
-            suspense: true
-          }
-      ),
   useFetchFilesAndKnowledgeBases: () => {
     return useClientDataSWR(
         [FETCH_AGENT_KNOWLEDGE_KEY, get().activeAgentId],
@@ -155,32 +106,6 @@ export const createChatSlice = (set, get) => ({
         }
     )
   },
-
-  useInitAgentStore: (isLogin, defaultAgentConfig) =>
-      useOnlyFetchOnceSWR(
-          !!isLogin ? "fetchInboxAgentConfig" : null,
-          () => sessionService.getSessionConfig(INBOX_SESSION_ID),
-          {
-            onSuccess: data => {
-              set(
-                  {
-                    defaultAgentConfig: merge(
-                        get().defaultAgentConfig,
-                        defaultAgentConfig
-                    ),
-                    isInboxAgentConfigInit: true
-                  },
-                  false,
-                  "initDefaultAgent"
-              )
-
-              if (data) {
-                get().internal_dispatchAgentMap(INBOX_SESSION_ID, data, "initInbox")
-              }
-            }
-          }
-      ),
-  /* eslint-disable sort-keys-fix/sort-keys-fix */
 
   internal_dispatchAgentMap: (id, config, actions) => {
     const agentMap = produce(get().agentMap, draft => {
@@ -201,12 +126,7 @@ export const createChatSlice = (set, get) => ({
     // optimistic update at frontend
     get().internal_dispatchAgentMap(id, data, "optimistic_updateAgentConfig")
 
-    await sessionService.updateSessionConfig(id, data, signal)
     await get().internal_refreshAgentConfig(id)
-
-    // refresh sessions to update the agent config if the model has changed
-    if (prevModel !== data.model)
-      await useSessionStore.getState().refreshSessions()
   },
 
   internal_refreshAgentConfig: async id => {

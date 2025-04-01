@@ -7,7 +7,7 @@ export const preventLeavingFn = e => {
 }
 
 export const toggleBooleanList = (ids, id, loading) => {
-  return produce(ids, draft => {
+  return produce(ids || [], draft => {
     if (loading) {
       if (!draft.includes(id)) draft.push(id)
     } else {

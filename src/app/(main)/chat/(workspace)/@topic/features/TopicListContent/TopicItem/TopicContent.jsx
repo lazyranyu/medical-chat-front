@@ -17,7 +17,6 @@ import { Flexbox } from 'react-layout-kit';
 import BubblesLoading from '@/components/BubblesLoading';
 import { LOADING_FLAT } from '@/const/message';
 import { useChatStore } from '@/store/chat';
-import {topicSelectors} from "@/store";
 
 const useStyles = createStyles(({ css }) => ({
   content: css`
@@ -36,22 +35,23 @@ const { Paragraph } = Typography;
 
 const TopicContent = memo(({ id, title, fav, showMore }) => {
   const { t } = useTranslation(["topic", "common"]);
-  const editing =topicSelectors(useChatStore(),state=>state.topicRenamingId)=== id;
-  const [
-    favoriteTopic,
-    updateTopicTitle,
-    removeTopic,
-    autoRenameTopicTitle,
-    duplicateTopic,
-    isLoading
-  ] = topicSelectors(useChatStore(),s => [
-    s.favoriteTopic,
-    s.updateTopicTitle,
-    s.removeTopic,
-    s.autoRenameTopicTitle,
-    s.duplicateTopic,
-    s.topicLoadingIds.includes(id)
-  ])
+    const [
+        editing,
+        favoriteTopic,
+        updateTopicTitle,
+        removeTopic,
+        autoRenameTopicTitle,
+        duplicateTopic,
+        isLoading,
+    ] = useChatStore((s) => [
+        s.topicRenamingId === id,
+        s.favoriteTopic,
+        s.updateTopicTitle,
+        s.removeTopic,
+        s.autoRenameTopicTitle,
+        s.duplicateTopic,
+        s.topicLoadingIds.includes(id),
+    ]);
   const { styles, theme } = useStyles()
 
   const toggleEditing = visible => {

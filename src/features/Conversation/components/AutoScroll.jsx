@@ -7,8 +7,8 @@ import { useStoreSelector } from '@/hooks/useStoreSelector';
 import BackBottom from './BackBottom';
 
 const AutoScroll = memo(({ atBottom, isScrolling, onScrollToBottom }) => {
-  const trackVisibility = useStoreSelector(useChatStore, messageSelectors.isAIGenerating);
-  const str = useStoreSelector(messageSelectors.mainAIChatsMessageString);
+  const trackVisibility = useChatStore(messageSelectors.isAIGenerating);
+  const str = useChatStore(messageSelectors.mainAIChatsMessageString);
 
   useEffect(() => {
     console.log('AutoScroll 组件状态:', {

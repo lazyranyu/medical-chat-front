@@ -9,7 +9,7 @@ import { CHAT_SIDEBAR_WIDTH } from "@/const/layoutTokens"
 // import { useChatStore } from "@/store/chat"
 // import { chatPortalSelectors } from "@/store/chat/slices/portal/selectors"
 import { useGlobalStore } from "@/store/global"
-import {systemStatusSelectors} from "@/store";
+import {systemStatusSelectors} from "@/store/global/selectors";
 import {globalWorkspaceSlice} from "@/store/global/actions/workspacePane";
 // import {state} from "@auth/core/lib/actions/callback/oauth/checks";
 // import { systemStatusSelectors } from "@/store/global/selectors"

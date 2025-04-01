@@ -9,7 +9,6 @@ import { Flexbox } from 'react-layout-kit';
 import BubblesLoading from '@/components/BubblesLoading';
 import { LOADING_FLAT } from '@/const/message';
 import { useChatStore } from '@/store/chat';
-import {threadSelectors} from "@/store";
 
 const useStyles = createStyles(({ css, token }) => ({
     active: css`
@@ -34,15 +33,11 @@ const { Paragraph } = Typography
 const Content = memo(({ id, title, active, showMore }) => {
     const { t } = useTranslation(["thread", "common"])
 
-    const [
-        editing,
-        updateThreadTitle,
-        removeThread
-    ] = useChatStore(threadSelectors, s => [
+    const [editing, updateThreadTitle, removeThread] = useChatStore((s) => [
         s.threadRenamingId === id,
         s.updateThreadTitle,
-        s.removeThread
-    ])
+        s.removeThread,
+    ]);
     const { styles, cx } = useStyles()
 
     const toggleEditing = visible => {

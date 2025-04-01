@@ -1,0 +1,1 @@
+export const UPLOAD_STATUS_SET = new Set(['uploading', 'pending', 'processing']);

@@ -4,12 +4,11 @@ import { apiClient, fetcher } from '../apiClient';
 
 // 将类改为对象，使其可以直接被导入使用
 export const messageService = {
-    createMessage: async ({ sessionId, ...params }) => {
+    createMessage: async ({...params }) => {
         const response = await apiClient.post('/message/create', {
             ...params,
-            sessionId: messageService.toDbSessionId(sessionId),
         });
-        return response.data;
+        return response.data.data;
     },
 
     batchCreateMessages: async (messages) => {
@@ -17,14 +16,17 @@ export const messageService = {
         return response.data;
     },
 
-    getMessages: async (sessionId, topicId) => {
+    getMessages: async (topicId) => {
+        const current = 0
+        const pageSize = 1000
         const response = await apiClient.get('/message/getMessages', {
             params: {
-                sessionId: messageService.toDbSessionId(sessionId),
+                current,
+                pageSize,
                 topicId,
             },
         });
-        return response.data;
+        return response.data.data;
     },
 
     getAllMessages: async () => {

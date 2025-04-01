@@ -16,8 +16,7 @@ import { agentSelectors } from '@/store/agent/selectors';
 import { useGlobalStore } from '@/store/global';
 import { ChatSettingsTabs } from '@/store/global/initialState';
 import { systemStatusSelectors } from '@/store/global/selectors';
-import { useSessionStore } from '@/store/session';
-import { sessionMetaSelectors, sessionSelectors } from '@/store/session/selectors';
+import { defaultMeta } from '@/const/session';
 
 import { useStyles } from './style';
 
@@ -25,10 +24,7 @@ const SystemRole = memo(() => {
   const [editing, setEditing] = useState(false);
   const { styles } = useStyles();
   const openChatSettings = useOpenChatSettings(ChatSettingsTabs.Prompt);
-  const [init, meta] = useSessionStore((s) => [
-    sessionSelectors.isSomeSessionActive(s),
-    sessionMetaSelectors.currentAgentMeta(s),
-  ]);
+  const meta = defaultMeta;
 
   const [systemRole, updateAgentConfig] = useAgentStore((s) => [
     agentSelectors.currentAgentSystemRole(s),
@@ -49,14 +45,11 @@ const SystemRole = memo(() => {
   const { t } = useTranslation('common');
 
   const handleOpenWithEdit = () => {
-    if (!init) return;
     setEditing(true);
     setOpen(true);
   };
 
   const handleOpen = () => {
-    if (!init) return;
-
     setOpen(true);
   };
 
@@ -76,14 +69,7 @@ const SystemRole = memo(() => {
           if (e.altKey) handleOpenWithEdit();
         }}
       >
-        {!init ? (
-          <Skeleton
-            active
-            avatar={false}
-            style={{ marginTop: 12, paddingInline: 16 }}
-            title={false}
-          />
-        ) : (
+        {(
           <>
             <EditableMessage
               classNames={{ markdown: styles.prompt }}

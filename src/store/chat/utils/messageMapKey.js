@@ -1,7 +1,7 @@
-export const messageMapKey = (sessionId, topicId) => {
+export const messageMapKey = (topicId) => {
   let topic = topicId
 
   if (typeof topicId === "undefined") topic = null
 
-  return `${sessionId}_${topic}`
+  return `${topic}`
 }

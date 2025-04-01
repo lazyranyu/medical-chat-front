@@ -14,7 +14,6 @@ import { useClientDataSWR } from "@/libs/swr" // 客户端数据SWR hook
 import { chatService} from "@/api/chatService";
 import { threadService } from "@/api/thread"
 import { threadSelectors } from "@/store/chat/selectors" // 线程选择器
-import { useSessionStore } from "@/store/session" // 会话状态管理hook
 import { useUserStore } from "@/store/user" // 用户状态管理hook
 import { systemAgentSelectors } from "@/store/user/selectors" // 系统代理选择器
 import { merge } from "@/utils/merge" // 合并对象的工具函数
@@ -141,7 +140,6 @@ export const chatThreadMessage = (set, get) => ({
       // 如果消息附带文件，则添加文件到消息和代理
       // files: fileIdList,
       role: "user",
-      sessionId: activeId,
       // 如果有活动话题ID，则添加到消息中
       topicId: activeTopicId,
       threadId: portalThreadId
@@ -183,16 +181,13 @@ export const chatThreadMessage = (set, get) => ({
       get().internal_toggleMessageLoading(true, tempMessageId)
 
       // 创建消息
-      parentMessageId = get().internal_createMessage(newMessage, {
+      parentMessageId = await get().internal_createMessage(newMessage, {
         tempMessageId
       })
     }
 
     // 取消消息加载状态
     get().internal_toggleMessageLoading(false, tempMessageId)
-
-    // 触发会话更新以重新排序
-    await useSessionStore.getState().triggerSessionUpdate(get().activeId)
 
     // 获取当前消息以生成AI回复
     const messages = threadSelectors.portalAIChats(get())

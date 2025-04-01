@@ -21,10 +21,10 @@ const renderFooter = ({ expand, onExpandChange }) => (
     <Footer expand={expand} onExpandChange={onExpandChange} />
 )
 const Desktop = memo(() => {
-    const inputHeight = useGlobalStore((s) =>
+    const [inputHeight, updatePreference] = useGlobalStore((s) => [
         systemStatusSelectors.inputHeight(s),
-    );
-    const updatePreference = generalActionSlice(useGlobalStore,s=>s.updateSystemStatus())
+        s.updateSystemStatus,
+    ]);
     return (
         <DesktopChatInput
             inputHeight={inputHeight}
