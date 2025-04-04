@@ -10,7 +10,7 @@ export const useChatListActionsBar = ({ hasThread } = {}) => {
     return useMemo(
         () => ({
             branching: {
-                disable: isDeprecatedEdition,
+                disabled: isDeprecatedEdition,
                 icon: Split,
                 key: "branching",
                 label: common.branching
@@ -22,7 +22,7 @@ export const useChatListActionsBar = ({ hasThread } = {}) => {
             },
             del: {
                 danger: true,
-                disable: hasThread,
+                disabled: hasThread,
                 icon: Trash,
                 key: "del",
                 label: hasThread
@@ -30,7 +30,7 @@ export const useChatListActionsBar = ({ hasThread } = {}) => {
                     : common.delete
             },
             delAndRegenerate: {
-                disable: hasThread,
+                disabled: hasThread,
                 icon: ListRestart,
                 key: "delAndRegenerate",
                 label: chat.messageAction.delAndRegenerate

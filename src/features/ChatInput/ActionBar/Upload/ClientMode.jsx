@@ -39,7 +39,7 @@ const FileUpload = memo(() => {
             showUploadList={false}
         >
             <ActionIcon
-                disable={!canUpload}
+                disabled={!canUpload}
                 icon={enabledFiles ? FileUp : LucideImage}
                 placement={'bottom'}
                 title={chat.upload.action.imageUpload}

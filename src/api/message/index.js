@@ -82,8 +82,8 @@ export const messageService = {
         return response.data;
     },
 
-    updateMessage: async (id, message) => {
-        const response = await apiClient.post('/message/update', { id, value: message });
+    updateMessage: async (id, content) => {
+        const response = await apiClient.post('/message/update', { id, content });
         return response.data;
     },
 

@@ -13,6 +13,9 @@ const api = axios.create({
  */
 const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signal }) => {
     try {
+        // 立即发送一个初始消息，使前端立即显示输入指示器
+        onMessage?.({ type: 'text', text: '' });
+        
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -30,12 +33,33 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let fullContent = ''; // 用于累积全部内容
+        let receivedFirstChunk = false;
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
-                onComplete?.();
+                // 处理buffer中可能剩余的内容
+                if (buffer.length > 0 && buffer.startsWith('"data:"')) {
+                    try {
+                        const content = buffer.substring(8, buffer.length - 1);
+                        fullContent += content;
+                        onMessage?.({ type: 'text', text: content });
+                    } catch (e) {
+                        console.error('解析最终内容错误:', e, buffer);
+                    }
+                }
+                
+                // 传递完整的内容给onComplete回调
+                onComplete?.(fullContent);
                 break;
+            }
+
+            // 标记已收到第一个数据块，并立即发送第一个响应以减少用户感知的延迟
+            if (!receivedFirstChunk) {
+                receivedFirstChunk = true;
+                // 发送一个空的首次响应，触发UI更新
+                onMessage?.({ type: 'text', text: ' ' });
             }
 
             buffer += decoder.decode(value, { stream: true });
@@ -49,8 +73,10 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
                     // 提取data:"和"之间的内容
                     const content = part.substring(8, part.length - 1); // 去掉data:"前缀和结尾的"
                     try {
-                        // 直接使用内容，因为已经是字符串了
-                        onMessage?.({ content });
+                        // 累积内容
+                        fullContent += content;
+                        // 发送格式化的消息块
+                        onMessage?.({ type: 'text', text: content });
                     } catch (e) {
                         console.error('解析错误:', e, content);
                     }
@@ -79,7 +105,6 @@ export const chatService = {
                                              onFinish,
                                              onErrorHandle,
                                              onAbort,
-                                             trace,
                                              isWelcomeQuestion,
                                              historySummary,
                                          }) => {
@@ -97,7 +122,6 @@ export const chatService = {
                 context: {
                     isWelcomeQuestion,
                     historySummary,
-                    trace,
                 }
             };
 

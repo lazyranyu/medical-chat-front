@@ -14,11 +14,10 @@ import useSWR, { mutate } from "swr" // SWR数据获取和更新工具
 import { chainSummaryTitle } from "@/chains/summaryTitle" // 话题标题摘要生成链
 import { message } from "@/components/AntdStaticMethods" // Ant Design消息提示组件
 import { LOADING_FLAT } from "@/const/message" // 加载状态常量
-import { TraceNameMap } from "@/const/trace" // 跟踪名称映射常量
 import { useClientDataSWR } from "@/libs/swr" // 客户端数据SWR hook
 import { chatService} from "@/api/chatService";
 import { messageService} from "@/api/message";
-import { topicService} from "@/api/topic";
+import { topicService, topicSummaryService } from "@/api/topic";
 import { useUserStore } from "@/store/user" // 用户状态管理hook
 import { systemAgentSelectors } from "@/store/user/selectors" // 系统代理选择器
 import { merge } from "@/utils/merge" // 合并对象的工具函数
@@ -154,7 +153,7 @@ export const chatTopic = (set, get) => ({
      * @param {string} topicId - 话题ID
      * @param {Array} messages - 消息列表
      */
-    summaryTopicTitle: async (topicId, messages) => {
+    summaryTopicTitle: async (topicId, msgs) => {
         const {
             internal_updateTopicTitleInSummary,
             internal_updateTopicLoading
@@ -172,37 +171,16 @@ export const chatTopic = (set, get) => ({
         const topicConfig = systemAgentSelectors.topic(useUserStore.getState())
 
         // 自动总结话题标题
-        await chatService.fetchPresetTaskResult({
-            onError: () => {
-                // 出错时恢复原标题
-                internal_updateTopicTitleInSummary(topicId, topic.title)
-            },
-            onFinish: async text => {
-                // 完成时更新话题标题
-                await get().internal_updateTopic(topicId, { title: text })
-            },
-            onLoadingChange: loading => {
-                // 更新加载状态
-                internal_updateTopicLoading(topicId, loading)
-            },
-            onMessageHandle: chunk => {
-                switch (chunk.type) {
-                    case "text": {
-                        output += chunk.text
-                    }
-                }
-
-                // 实时更新标题
-                internal_updateTopicTitleInSummary(topicId, output)
-            },
-            // 合并话题配置和标题摘要链
-            params: merge(topicConfig, chainSummaryTitle(messages)),
-            // 设置跟踪信息
-            trace: get().getCurrentTracePayload({
-                traceName: TraceNameMap.SummaryTopicTitle,
-                topicId
-            })
+        const data = await topicSummaryService.summaryTopicTitle({
+            topic: { id: topicId },
+            messages: msgs,
         })
+
+        // 完成时更新话题标题
+        await get().internal_updateTopic(topicId, { title: data.title })
+
+        // 实时更新标题
+        internal_updateTopicTitleInSummary(topicId, data.title)
     },
 
     /**

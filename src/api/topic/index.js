@@ -81,6 +81,14 @@ export const topicService = {
     }
 };
 
+// 添加话题摘要服务
+export const topicSummaryService = {
+    summaryTopicTitle: async (params) => {
+        const response = await apiClient.post('/topic/summaryTitle', params);
+        return response.data;
+    }
+};
+
 // SWR Hooks
 
 

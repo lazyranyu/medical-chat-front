@@ -160,8 +160,6 @@ export const createMessageSlice = (set, get) => ({
    */
   copyMessage: async (id, content) => {
     await copyToClipboard(content)
-
-    // get().internal_traceMessage(id, { eventType: TraceEventType.CopyMessage })
   },
   
   /**
@@ -203,13 +201,6 @@ export const createMessageSlice = (set, get) => ({
    * @param {string} content - 新的消息内容
    */
   modifyMessageContent: async (id, content) => {
-    // 记录修改事件
-    // // 由于消息内容将会改变，所以需要在更新前发送跟踪，否则会获取错误的数据
-    // get().internal_traceMessage(id, {
-    //   eventType: TraceEventType.ModifyMessage,
-    //   nextContent: content
-    // })
-
     await get().internal_updateMessageContent(id, content)
   },
   
@@ -277,9 +268,14 @@ export const createMessageSlice = (set, get) => ({
 
     if (isEqual(nextMap, get().messagesMap)) return
 
+    // 检查是否需要立即更新（用于流式响应）
+    const isImmediate = payload.immediate === true
+    
     set({ messagesMap: nextMap }, false, {
       type: `dispatchMessage/${payload.type}`,
-      payload
+      payload,
+      // 添加立即更新标志
+      immediate: isImmediate
     })
   },
 
@@ -306,35 +302,29 @@ export const createMessageSlice = (set, get) => ({
    * @param {string} content - 新的消息内容
    * @param {Array} toolCalls - 工具调用数据
    */
-  internal_updateMessageContent: async (id, content, toolCalls) => {
+  internal_updateMessageContent: async (id, content) => {
     const {
       internal_dispatchMessage,
       refreshMessages,
-      internal_transformToolCalls
     } = get()
 
-    // 由于异步更新方法和刷新需要约100ms
-    // 我们需要在前端更新消息内容以避免更新闪烁
-    // 参考: https://medium.com/@kyledeguzmanx/what-are-optimistic-updates-483662c3e171
-    if (toolCalls) {
-      internal_dispatchMessage({
-        id,
-        type: "updateMessage",
-        value: { tools: internal_transformToolCalls(toolCalls) }
-      })
-    } else {
-      internal_dispatchMessage({
-        id,
-        type: "updateMessage",
-        value: { content }
-      })
-    }
-
-    await messageService.updateMessage(id, {
-      content,
-      tools: toolCalls ? internal_transformToolCalls(toolCalls) : undefined
+    // 立即更新UI显示，标记为立即更新
+    internal_dispatchMessage({
+      id,
+      type: "updateMessage",
+      value: { content },
+      immediate: true
     })
-    await refreshMessages()
+
+    // 后台更新数据库，不阻塞UI
+    // 使用Promise.resolve().then()将数据库更新移到下一个微任务队列
+    Promise.resolve().then(async () => {
+      await messageService.updateMessage(id, content);
+      // 使用较低优先级刷新消息，避免阻塞UI
+      setTimeout(() => {
+        refreshMessages();
+      }, 0);
+    });
   },
 
   /**
@@ -348,9 +338,10 @@ export const createMessageSlice = (set, get) => ({
     const {
       internal_createTmpMessage,
       refreshMessages,
-      internal_toggleMessageLoading
+      internal_toggleMessageLoading,
     } = get()
     let tempId = context?.tempMessageId
+
     if (!tempId) {
       // 使用乐观更新避免等待
       tempId = internal_createTmpMessage(message)
@@ -359,6 +350,7 @@ export const createMessageSlice = (set, get) => ({
     }
 
     const id = await messageService.createMessage(message)
+
     if (!context?.skipRefresh) {
       internal_toggleMessageLoading(true, tempId)
       await refreshMessages()
@@ -423,33 +415,6 @@ export const createMessageSlice = (set, get) => ({
     await get().refreshMessages()
   },
   
-  // /**
-  //  * 内部方法：跟踪消息事件
-  //  *
-  //  * @param {string} id - 消息ID
-  //  * @param {Object} payload - 事件数据
-  //  */
-  // internal_traceMessage: async (id, payload) => {
-  //   // 获取消息
-  //   const message = messageSelectors.getMessageById(id)(get())
-  //   if (!message) return
-  //
-  //   const traceId = message?.traceId
-  //   const observationId = message?.observationId
-  //
-  //   // 如果是助手消息且有跟踪ID，记录事件
-  //   if (traceId && message?.role === "assistant") {
-  //     traceService
-  //         .traceEvent({
-  //           traceId,
-  //           observationId,
-  //           content: message.content,
-  //           ...payload
-  //         })
-  //         .catch()
-  //   }
-  // },
-
   // ----- 加载状态管理 ------- //
   
   /**
@@ -517,5 +482,33 @@ export const createMessageSlice = (set, get) => ({
       // 移除页面离开前的提示
       window.removeEventListener("beforeunload", preventLeavingFn)
     }
-  }
+  },
+
+  /**
+   * 内部方法：转换工具调用
+   * 
+   * 这是一个空实现，用于保持代码兼容性，实际功能已被移除
+   */
+  internal_transformToolCalls: () => {
+    // 空实现，功能已被移除
+    return [];
+  },
+
+  /**
+   * 内部方法：从助手消息中移除工具项
+   * 
+   * 这是一个空实现，用于保持代码兼容性，实际功能已被移除
+   */
+  internal_removeToolToAssistantMessage: async () => {
+    // 空实现，功能已被移除
+  },
+
+  /**
+   * 重新调用工具消息
+   * 
+   * 这是一个空实现，用于保持代码兼容性，实际功能已被移除
+   */
+  reInvokeToolMessage: async () => {
+    // 空实现，功能已被移除
+  },
 })

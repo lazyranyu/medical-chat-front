@@ -14,7 +14,6 @@ import { produce } from "immer"
 import { template } from "lodash-es"
 
 import { LOADING_FLAT, MESSAGE_CANCEL_FLAT } from "@/const/message"
-import { TraceEventType, TraceNameMap } from "@/const/trace"
 import { chatService } from "@/api/chatService"
 import { messageService} from "@/api/message";
 import { useAgentStore } from "@/store/agent"
@@ -28,6 +27,7 @@ import {
   getAgentConfig,
   getAgentKnowledge
 } from "./helpers"
+import {DEFAULT_AGENT_CHAT_CONFIG} from "@/const/settings";
 
 // 设置调试命名空间
 const n = setNamespace("ai")
@@ -49,14 +49,8 @@ export const generateAIChat = (set, get) => ({
    * @returns {Promise<void>}
    */
   delAndRegenerateMessage: async id => {
-    const traceId = messageSelectors.getTraceIdByMessageId(id)(get())
-    get().internal_resendMessage(id, { traceId })
+    get().internal_resendMessage(id, {})
     get().deleteMessage(id)
-
-    // // 记录删除并重新生成消息的跟踪事件
-    // get().internal_traceMessage(id, {
-    //   eventType: TraceEventType.DeleteAndRegenerateMessage
-    // })
   },
 
   /**
@@ -68,13 +62,7 @@ export const generateAIChat = (set, get) => ({
    * @returns {Promise<void>}
    */
   regenerateMessage: async id => {
-    const traceId = messageSelectors.getTraceIdByMessageId(id)(get())
-    await get().internal_resendMessage(id, { traceId })
-
-    // // 记录重新生成消息的跟踪事件
-    // get().internal_traceMessage(id, {
-    //   eventType: TraceEventType.RegenerateMessage
-    // })
+    await get().internal_resendMessage(id, {})
   },
 
   /**
@@ -263,7 +251,7 @@ export const generateAIChat = (set, get) => ({
 
    // // 内部方法：AI消息处理核心方法（当前已注释）
   internal_coreProcessMessage: async (originalMessages, userMessageId, params) => {
-    const { internal_fetchAIChatMessage, triggerToolCalls, refreshMessages, activeTopicId } = get();
+    const { internal_fetchAIChatMessage, refreshMessages, activeTopicId } = get();
 
     // 创建新数组避免修改原消息数组
     const messages = [...originalMessages];
@@ -314,22 +302,11 @@ export const generateAIChat = (set, get) => ({
       sessionId: get().activeId,
       topicId: activeTopicId,
       threadId: params?.threadId,
-      fileChunks,
-      ragQueryId
     };
     const [assistantId] = await Promise.all([get().internal_createMessage(assistantMessage)]);
 
     // 3. 获取AI响应
-    const { isFunctionCall } = await internal_fetchAIChatMessage(messages, assistantId, params);
-
-    // 4. 如果是函数调用消息，触发工具方法
-    if (isFunctionCall) {
-      await refreshMessages();
-      await triggerToolCalls(assistantId, {
-        threadId: params?.threadId,
-        inPortalThread: params?.inPortalThread
-      });
-    }
+    await internal_fetchAIChatMessage(messages, assistantId, params);
 
     // 5. 当上下文消息超过历史限制时进行摘要
     const historyCount =
@@ -362,7 +339,6 @@ export const generateAIChat = (set, get) => ({
       refreshMessages,
       internal_updateMessageContent,
       internal_dispatchMessage,
-      internal_toggleToolCallingStreaming
     } = get()
 
     // 设置聊天加载状态并获取中止控制器
@@ -421,8 +397,6 @@ export const generateAIChat = (set, get) => ({
         ? agentConfig.params.max_tokens
         : undefined
 
-    let isFunctionCall = false
-    let msgTraceId
     let output = ""
 
     // 获取当前活跃话题摘要
@@ -437,34 +411,25 @@ export const generateAIChat = (set, get) => ({
         provider: agentConfig.provider,
         ...agentConfig.params,
         plugins: agentConfig.plugins,
+        // 禁用工具调用功能
+        function_call: "none",
+        tools: [],
       },
       historySummary: historySummary?.content,
-      trace: {
-        traceId: params?.traceId,
-        topicId: get().activeTopicId,
-        traceName: TraceNameMap.Conversation,
-      },
       isWelcomeQuestion: params?.isWelcomeQuestion,
       onErrorHandle: async (error) => {
-        await messageService.updateMessageError(assistantId, error);
+        console.error("AI聊天消息生成错误:", error);
+        // 更新消息显示错误信息
+        await messageService.updateMessageError(assistantId, {
+          message: "生成回复时出错，请稍后重试",
+          details: error.message || "未知错误"
+        });
         await refreshMessages();
       },
-      onFinish: async (content, { traceId, observationId, toolCalls }) => {
-        // if there is traceId, update it
-        if (traceId) {
-          msgTraceId = traceId;
-          await messageService.updateMessage(assistantId, {
-            traceId,
-            observationId: observationId ?? undefined,
-          });
-        }
-
-        if (toolCalls && toolCalls.length > 0) {
-          internal_toggleToolCallingStreaming(assistantId, undefined);
-        }
-
+      onFinish: async (content) => {
+        
         // update the content after fetch result
-        await internal_updateMessageContent(assistantId, content, toolCalls);
+        await internal_updateMessageContent(assistantId, content);
       },
       onMessageHandle: async (chunk) => {
         switch (chunk.type) {
@@ -477,17 +442,6 @@ export const generateAIChat = (set, get) => ({
             });
             break;
           }
-
-            // is this message is just a tool call
-          case 'tool_calls': {
-            internal_toggleToolCallingStreaming(assistantId, chunk.isAnimationActives);
-            internal_dispatchMessage({
-              id: assistantId,
-              type: 'updateMessage',
-              value: { tools: get().internal_transformToolCalls(chunk.tool_calls) },
-            });
-            isFunctionCall = true;
-          }
         }
       },
     });
@@ -495,10 +449,7 @@ export const generateAIChat = (set, get) => ({
     // 关闭聊天加载状态
     internal_toggleChatLoading(false, assistantId, n("generateMessage(end)"))
 
-    return {
-      isFunctionCall,
-      traceId: msgTraceId
-    }
+    return {};
   },
 
   /**
@@ -508,7 +459,6 @@ export const generateAIChat = (set, get) => ({
    * 
    * @param {String} messageId - 消息ID
    * @param {Object} options - 选项对象
-   * @param {String} options.traceId - 跟踪ID
    * @param {Array} options.messages - 外部提供的消息列表
    * @param {String} options.threadId - 线程ID
    * @param {Boolean} options.inPortalThread - 是否在门户线程中
@@ -516,7 +466,7 @@ export const generateAIChat = (set, get) => ({
    */
   internal_resendMessage: async (
       messageId,
-      { traceId, messages: outChats, threadId: outThreadId, inPortalThread } = {}
+      { messages: outChats, threadId: outThreadId, inPortalThread } = {}
   ) => {
     // 1. 构造所有相关的历史记录
     const chats = outChats ?? messageSelectors.mainAIChats(get())
@@ -565,7 +515,6 @@ export const generateAIChat = (set, get) => ({
 
     // 处理消息生成AI回复
     await internal_coreProcessMessage(contextMessages, latestMsg.id, {
-      traceId,
       ragQuery: get().internal_shouldUseRAG() ? latestMsg.content : undefined,
       threadId,
       inPortalThread
@@ -592,24 +541,12 @@ export const generateAIChat = (set, get) => ({
   /**
    * 内部方法：切换工具调用流状态
    * 
-   * 管理工具调用的流式状态，用于UI动画显示
+   * 这是一个空实现，用于保持代码兼容性，实际功能已被移除
    * 
    * @param {String} id - 消息ID
    * @param {Boolean} streaming - 是否正在流式传输
    */
-  internal_toggleToolCallingStreaming: (id, streaming) => {
-    set(
-        {
-          toolCallingStreamIds: produce(get().toolCallingStreamIds, draft => {
-            if (!!streaming) {
-              draft[id] = streaming
-            } else {
-              delete draft[id]
-            }
-          })
-        },
-        false,
-        "toggleToolCallingStreaming"
-    )
+  internal_toggleToolCallingStreaming: () => {
+    // 空实现，功能已被移除
   }
 })

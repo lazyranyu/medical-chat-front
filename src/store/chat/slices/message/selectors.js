@@ -23,20 +23,38 @@ import { chatHelpers } from "../../helpers" // 聊天辅助函数
  * @returns {Object} 包含头像等元数据的对象
  */
 const getMeta = message => {
+  let meta = {
+    avatar: DEFAULT_USER_AVATAR,
+    title: message.role === 'user' ? '用户' : '助手',
+  };
+  
   switch (message.role) {
     case "user": {
       // 用户消息使用用户头像或默认头像
       return {
-        avatar:
-            userProfileSelectors.userAvatar(useUserStore.getState()) ||
-            DEFAULT_USER_AVATAR
+        ...meta,
+        avatar: userProfileSelectors.userAvatar(useUserStore.getState()) || DEFAULT_USER_AVATAR,
+        title: '用户'
+      }
+    }
+
+    case "assistant": {
+      // 助手消息
+      return {
+        ...meta,
+        title: '助手'
       }
     }
 
     case "system": {
       // 系统消息使用消息自带的元数据
-      return message.meta
+      // 确保系统消息的meta至少包含title属性
+      return message.meta ? { ...meta, ...message.meta } : meta;
     }
+    
+    default:
+      // 确保所有其他角色都有默认元数据
+      return meta;
   }
 }
 
@@ -63,6 +81,7 @@ const activeBaseChats = s => {
 
   // 获取当前会话和话题的消息
   const messages = s.messagesMap[currentChatKey(s)] || []
+  console.log('activeBaseChats',messages)
   // 为每个消息添加元数据
   return messages.map(i => ({ ...i, meta: getMeta(i) }))
 }
@@ -76,6 +95,7 @@ const activeBaseChats = s => {
  */
 const activeBaseChatsWithoutTool = s => {
   const messages = activeBaseChats(s)
+  console.log('activeBaseChatsWithoutTool',messages)
 
   return messages.filter(m => m.role !== "tool")
 }
@@ -132,7 +152,10 @@ const mainDisplayChats = s => {
  * @param {Object} s - 状态对象
  * @returns {Array} 消息ID列表
  */
-const mainDisplayChatIDs = s => mainDisplayChats(s).map(s => s.id)
+const mainDisplayChatIDs = s =>{
+  console.log( 'mainDisplayChatIDs',mainDisplayChats(s).map(s => s.id))
+  return mainDisplayChats(s).map(s => s.id)
+}
 
 /**
  * 获取主要AI消息列表
@@ -260,14 +283,6 @@ const getMessageByToolCallId = id => s => {
 }
 
 /**
- * 根据消息ID获取跟踪ID
- * 
- * @param {string} id - 消息ID
- * @returns {Function} 返回一个接收状态的函数，该函数返回跟踪ID
- */
-const getTraceIdByMessageId = id => s => getMessageById(id)(s)?.traceId
-
-/**
  * 获取最新的消息
  * 
  * @param {Object} s - 状态对象
@@ -300,7 +315,7 @@ const isCurrentChatLoaded = (s) =>{
  * @param {string} id - 消息ID
  * @returns {Function} 返回一个接收状态的函数，该函数返回是否正在编辑
  */
-const isMessageEditing = id => s => s.messageEditingIds.includes(id)
+const isMessageEditing = id => s => s.messageEditingIds && Array.isArray(s.messageEditingIds) && s.messageEditingIds.includes(id)
 
 /**
  * 判断指定消息是否正在加载
@@ -308,7 +323,7 @@ const isMessageEditing = id => s => s.messageEditingIds.includes(id)
  * @param {string} id - 消息ID
  * @returns {Function} 返回一个接收状态的函数，该函数返回是否正在加载
  */
-const isMessageLoading = id => s => s.messageLoadingIds.includes(id)
+const isMessageLoading = id => s => s.messageLoadingIds && Array.isArray(s.messageLoadingIds) && s.messageLoadingIds.includes(id)
 
 /**
  * 判断指定消息是否正在生成
@@ -316,7 +331,7 @@ const isMessageLoading = id => s => s.messageLoadingIds.includes(id)
  * @param {string} id - 消息ID
  * @returns {Function} 返回一个接收状态的函数，该函数返回是否正在生成
  */
-const isMessageGenerating = id => s => s.chatLoadingIds.includes(id)
+const isMessageGenerating = id => s => s.chatLoadingIds && Array.isArray(s.chatLoadingIds) && s.chatLoadingIds.includes(id)
 
 /**
  * 判断指定消息是否在RAG流程中
@@ -325,7 +340,7 @@ const isMessageGenerating = id => s => s.chatLoadingIds.includes(id)
  * @param {string} id - 消息ID
  * @returns {Function} 返回一个接收状态的函数，该函数返回是否在RAG流程中
  */
-const isMessageInRAGFlow = id => s => s.messageRAGLoadingIds.includes(id)
+const isMessageInRAGFlow = id => s => s.messageRAGLoadingIds && Array.isArray(s.messageRAGLoadingIds) && s.messageRAGLoadingIds.includes(id)
 
 /**
  * 判断指定消息的插件API是否正在调用
@@ -333,7 +348,7 @@ const isMessageInRAGFlow = id => s => s.messageRAGLoadingIds.includes(id)
  * @param {string} id - 消息ID
  * @returns {Function} 返回一个接收状态的函数，该函数返回插件API是否正在调用
  */
-const isPluginApiInvoking = id => s => s.pluginApiLoadingIds.includes(id)
+const isPluginApiInvoking = id => s => s.pluginApiLoadingIds && Array.isArray(s.pluginApiLoadingIds) && s.pluginApiLoadingIds.includes(id)
 
 /**
  * 判断指定工具调用是否正在流式传输
@@ -356,8 +371,11 @@ const isToolCallStreaming = (id, index) => s => {
  * @param {Object} s - 状态对象
  * @returns {boolean} 是否正在生成
  */
-const isAIGenerating = s =>
-    s.chatLoadingIds && s.chatLoadingIds.some(id => mainDisplayChatIDs(s).includes(id))
+const isAIGenerating = s => {
+  const displayChatIDs = mainDisplayChatIDs(s);
+  console.log("isAIGenerating",displayChatIDs)
+  return  s.chatLoadingIds && s.chatLoadingIds.some(id => mainDisplayChatIDs(s).includes(id))
+}
 
 /**
  * 判断是否在RAG流程中
@@ -420,7 +438,13 @@ export const messageSelectors = {
   currentUserFiles,
   getMessageById,
   getMessageByToolCallId,
-  getTraceIdByMessageId,
+  latestMessage,
+  mainAIChats,
+  mainAIChatsMessageString,
+  mainAIChatsWithHistoryConfig,
+  mainDisplayChatIDs,
+  mainDisplayChats,
+  showInboxWelcome,
   isAIGenerating,
   isCreatingMessage,
   isCurrentChatLoaded,
@@ -431,12 +455,5 @@ export const messageSelectors = {
   isMessageLoading,
   isPluginApiInvoking,
   isSendButtonDisabledByMessage,
-  isToolCallStreaming,
-  latestMessage,
-  mainAIChats,
-  mainAIChatsMessageString,
-  mainAIChatsWithHistoryConfig,
-  mainDisplayChatIDs,
-  mainDisplayChats,
-  showInboxWelcome
+  isToolCallStreaming
 }

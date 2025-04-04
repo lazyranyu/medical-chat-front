@@ -198,6 +198,17 @@ export const messagesReducer = (state, payload) => {
       // 清空所有消息
       return []
     }
+    case "replaceMessageId": {
+      // 替换临时消息ID为后端返回的真实ID
+      return produce(state, draftState => {
+        const { oldId, newId } = payload
+        const index = draftState.findIndex(i => i.id === oldId)
+        if (index < 0) return // 如果找不到消息，不做任何操作
+        
+        // 更新消息ID
+        draftState[index].id = newId
+      })
+    }
     default: {
       throw new Error("暂未实现的 type，请检查 reducer")
     }

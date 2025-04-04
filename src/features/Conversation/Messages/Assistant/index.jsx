@@ -12,7 +12,7 @@ import FileChunks from "./FileChunks"
 
 export const AssistantMessage = memo(
     ({ id, tools, content, chunksList, ...props }) => {
-      const editing = useChatStore(messageSelectors.isMessageEditing(id))
+      const editing = useChatStore(messageSelectors.isMessageEditing(id));
       const generating = useChatStore(messageSelectors.isMessageGenerating(id))
 
       const inThread = useContext(InPortalThreadContext)

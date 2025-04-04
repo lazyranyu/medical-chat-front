@@ -67,7 +67,7 @@ const Item = memo(
 
         const item = useChatStore(messageSelectors.getMessageById(id), isEqual)
         const fontSize = useUserStore(userGeneralSettingsSelectors.fontSize)
-
+        console.log("111111111111111111111111")
         const [
             isMessageLoading,
             generating,

@@ -12,7 +12,6 @@ export const toggleBooleanList = (ids, id, loading) => {
       if (!draft.includes(id)) draft.push(id)
     } else {
       const index = draft.indexOf(id)
-
       if (index >= 0) draft.splice(index, 1)
     }
   })
