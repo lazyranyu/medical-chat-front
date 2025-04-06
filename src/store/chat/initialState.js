@@ -24,5 +24,9 @@ export const initialState = {
   ...initialPortalState, // 门户状态：包含聊天界面相关的UI状态
   ...initialTopicState, // 话题状态：包含对话话题的分类、标签等
   
+  // 消息更新性能优化相关状态
+  refreshMessageScheduled: false, // 是否已经安排了消息刷新
+  lastTextUpdateTime: null, // 最后一次文本更新的时间戳
+  
   // 可以根据需要添加其他状态
 };

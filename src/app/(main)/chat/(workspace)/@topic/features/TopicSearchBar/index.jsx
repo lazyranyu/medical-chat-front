@@ -6,9 +6,10 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useChatStore } from '@/store/chat';
+import topic from "@/locales/default/topic";
 
 const TopicSearchBar = memo(({ onClear }) => {
-  const { t } = useTranslation('topic');
+  // const { t } = useTranslation('topic');
 
   const [keywords, setKeywords] = useState('');
   const activeId = useChatStore.getState().activeId;
@@ -29,7 +30,7 @@ const TopicSearchBar = memo(({ onClear }) => {
         setKeywords(value);
         useChatStore.setState({ isSearchingTopic: !!value });
       }}
-      placeholder={t('searchPlaceholder')}
+      placeholder={topic.searchPlaceholder}
       spotlight={true}
       type={'ghost'}
       value={keywords}

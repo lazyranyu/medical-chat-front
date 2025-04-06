@@ -421,9 +421,7 @@ const isSendButtonDisabledByMessage = s =>
     // 2. 当正在创建话题时
     s.creatingTopic ||
     // 3. 当正在创建消息时
-    isCreatingMessage(s) ||
-    // 4. 当消息在RAG流程中时
-    isInRAGFlow(s)
+    isCreatingMessage(s)
 
 /**
  * 导出所有消息相关的选择器

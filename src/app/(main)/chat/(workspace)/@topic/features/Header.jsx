@@ -12,8 +12,10 @@ import { topicSelectors } from "@/store/chat/selectors"
 import { useUserStore } from "@/store/user"
 import { preferenceSelectors } from "@/store/user/selectors"
 import { TopicDisplayMode } from "@/types/topic"
+import topic from "@/locales/default/topic";
 
 import TopicSearchBar from "./TopicSearchBar"
+
 
 const Header = memo(() => {
     const { t } = useTranslation("topic")
@@ -35,7 +37,7 @@ const Header = memo(() => {
             ...Object.values(TopicDisplayMode).map(mode => ({
                 icon: topicDisplayMode === mode ? <Icon icon={LucideCheck} /> : <div />,
                 key: mode,
-                label: t(`groupMode.${mode}`),
+                label: topic.groupMode[mode],
                 onClick: () => {
                     updatePreference({ topicDisplayMode: mode })
                 }
@@ -46,13 +48,13 @@ const Header = memo(() => {
             {
                 icon: <Icon icon={Trash} />,
                 key: "deleteUnstarred",
-                label: t("actions.removeUnstarred"),
+                label: topic.actions.removeUnstarred,
                 onClick: () => {
                     modal.confirm({
                         centered: true,
                         okButtonProps: { danger: true },
                         onOk: removeUnstarredTopic,
-                        title: t("actions.confirmRemoveUnstarred")
+                        title: topic.actions.confirmRemoveUnstarred
                     })
                 }
             },
@@ -60,13 +62,13 @@ const Header = memo(() => {
                 danger: true,
                 icon: <Icon icon={Trash} />,
                 key: "deleteAll",
-                label: t("actions.removeAll"),
+                label: topic.actions.removeAll,
                 onClick: () => {
                     modal.confirm({
                         centered: true,
                         okButtonProps: { danger: true },
                         onOk: removeAllTopic,
-                        title: t("actions.confirmRemoveAll")
+                        title: topic.actions.confirmRemoveAll
                     })
                 }
             }
@@ -101,7 +103,7 @@ const Header = memo(() => {
                     </Dropdown>
                 </>
             }
-            title={`${t("title")} ${topicLength > 1 ? topicLength + 1 : ""}`}
+            title={`${topic.title} ${topicLength > 1 ? topicLength + 1 : ""}`}
         />
     )
 })

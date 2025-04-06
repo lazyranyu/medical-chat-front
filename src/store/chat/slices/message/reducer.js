@@ -20,19 +20,14 @@ import { merge } from "@/utils/merge" // 自定义合并对象的工具函数
  */
 export const messagesReducer = (state, payload) => {
   switch (payload.type) {
-    case "updateMessage": {
-      // 更新指定ID的消息内容
-      return produce(state, draftState => {
-        const { id, value } = payload
-        const index = draftState.findIndex(i => i.id === id)
-        if (index < 0) return // 如果找不到消息，不做任何操作
+    case 'updateMessage': {
+      return produce(state, (draftState) => {
+        const { id, value } = payload;
+        const index = draftState.findIndex((i) => i.id === id);
+        if (index < 0) return;
 
-        // 合并现有消息和新值，并更新时间戳
-        draftState[index] = merge(draftState[index], {
-          ...value,
-          updatedAt: Date.now()
-        })
-      })
+        draftState[index] = merge(draftState[index], { ...value, updatedAt: Date.now() });
+      });
     }
 
     case "updateMessageExtra": {

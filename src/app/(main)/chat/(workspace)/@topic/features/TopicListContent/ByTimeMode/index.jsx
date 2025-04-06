@@ -10,9 +10,10 @@ import {threadSelectors, topicSelectors} from "@/store/chat/selectors"
 import TopicItem from "../TopicItem"
 import TopicGroupItem from "./GroupItem"
 import {useStoreSelector} from "@/hooks/useStoreSelector";
+import topic from "@/locales/default/topic";
 
 const ByTimeMode = memo(() => {
-    const { t } = useTranslation("topic")
+    // const { t } = useTranslation("topic")
     const virtuosoRef = useRef(null)
     const activeTopicId = useStoreSelector(useChatStore, state => state.activeTopicId)
     const [activeThreadId] = useChatStore(s => [
@@ -34,7 +35,7 @@ const ByTimeMode = memo(() => {
                 {
                     favorite: false,
                     id: "default",
-                    title: t("defaultTitle")
+                    title: topic.defaultTitle
                 },
                 ...groupTopics.flatMap(group => group.children)
             ]

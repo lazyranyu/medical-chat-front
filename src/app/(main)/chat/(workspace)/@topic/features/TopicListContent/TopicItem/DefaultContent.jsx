@@ -5,11 +5,11 @@ import { MessageSquareDashed } from "lucide-react"
 import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
-
+import topic from "@/locales/default/topic";
 const { Paragraph } = Typography
 
 const DefaultContent = memo(() => {
-    const { t } = useTranslation("topic")
+    // const { t } = useTranslation("topic")
 
     const theme = useTheme()
 
@@ -19,9 +19,9 @@ const DefaultContent = memo(() => {
                 <Icon color={theme.colorTextDescription} icon={MessageSquareDashed} />
             </Flexbox>
             <Paragraph ellipsis={{ rows: 1 }} style={{ margin: 0 }}>
-                {t("defaultTitle")}
+                {topic.defaultTitle}
             </Paragraph>
-            <Tag>{t("temp")}</Tag>
+            <Tag>{topic.temp}</Tag>
         </Flexbox>
     )
 })

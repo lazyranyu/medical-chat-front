@@ -55,8 +55,10 @@ const Footer = memo(({ onExpandChange, expand }) => {
     const { styles } = useStyles()
 
     // 使用useStoreSelector替代直接使用useChatStore
-    const isAIGenerating = useStoreSelector(useChatStore, messageSelectors.isAIGenerating);
-    const stopGenerateMessage = useStoreSelector(useChatStore, state => state.stopGenerateMessage);
+    const [isAIGenerating, stopGenerateMessage] = useChatStore((s) => [
+        messageSelectors.isAIGenerating(s),
+        s.stopGenerateMessage,
+    ]);
     
     // // 替换原有的状态获取
     // const [isAIGenerating, stopGenerateMessage] = [

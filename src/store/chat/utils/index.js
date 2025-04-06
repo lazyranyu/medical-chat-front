@@ -16,3 +16,13 @@ export const toggleBooleanList = (ids, id, loading) => {
     }
   })
 }
+
+// 优化消息更新的防抖函数
+// 与常规防抖不同，该函数确保文本流在特定条件下立即更新
+export const optimizedDebounce = (lastUpdateTime, currentLength) => {
+  const now = Date.now();
+  // 如果没有上次更新时间，或者已经过了30ms，或者每10个字符更新一次
+  return !lastUpdateTime || 
+         now - lastUpdateTime > 30 || 
+         currentLength % 10 === 0;
+}

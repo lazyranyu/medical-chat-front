@@ -17,6 +17,8 @@ import { Flexbox } from 'react-layout-kit';
 import BubblesLoading from '@/components/BubblesLoading';
 import { LOADING_FLAT } from '@/const/message';
 import { useChatStore } from '@/store/chat';
+import topic from '@/locales/default/topic'
+import common from "@/locales/default/common";
 
 const useStyles = createStyles(({ css }) => ({
   content: css`
@@ -34,7 +36,7 @@ const useStyles = createStyles(({ css }) => ({
 const { Paragraph } = Typography;
 
 const TopicContent = memo(({ id, title, fav, showMore }) => {
-  const { t } = useTranslation(["topic", "common"]);
+  // const { t } = useTranslation(["topic", "common"]);
     const [
         editing,
         favoriteTopic,
@@ -65,7 +67,7 @@ const TopicContent = memo(({ id, title, fav, showMore }) => {
         {
           icon: <Icon icon={Wand2} />,
           key: "autoRename",
-          label: t("actions.autoRename"),
+          label: topic.actions.autoRename,
           onClick: () => {
             autoRenameTopicTitle(id)
           }
@@ -73,7 +75,7 @@ const TopicContent = memo(({ id, title, fav, showMore }) => {
         {
           icon: <Icon icon={PencilLine} />,
           key: "rename",
-          label: t("rename", { ns: "common" }),
+          label: common.rename,
           onClick: () => {
             toggleEditing(true)
           }
@@ -84,7 +86,7 @@ const TopicContent = memo(({ id, title, fav, showMore }) => {
         {
           icon: <Icon icon={LucideCopy} />,
           key: "duplicate",
-          label: t("actions.duplicate"),
+          label: topic.actions.duplicate,
           onClick: () => {
             duplicateTopic(id)
           }
@@ -109,7 +111,7 @@ const TopicContent = memo(({ id, title, fav, showMore }) => {
           danger: true,
           icon: <Icon icon={Trash} />,
           key: "delete",
-          label: t("delete", { ns: "common" }),
+          label: common.delete,
           onClick: () => {
             if (!id) return
 
@@ -119,7 +121,7 @@ const TopicContent = memo(({ id, title, fav, showMore }) => {
               onOk: async () => {
                 await removeTopic(id)
               },
-              title: t("actions.confirmRemoveTopic")
+              title: topic.actions.confirmRemoveTopic
             })
           }
         }

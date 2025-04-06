@@ -6,11 +6,12 @@ import { Virtuoso } from "react-virtuoso"
 
 import { useChatStore } from "@/store/chat"
 import { topicSelectors } from "@/store/chat/selectors"
-
+import topic from "@/locales/default/topic";
 import TopicItem from "../TopicItem"
 
+
 const FlatMode = memo(() => {
-    const { t } = useTranslation("topic")
+    // const { t } = useTranslation("topic")
     const virtuosoRef = useRef(null)
     const [activeTopicId] = useChatStore(topicSelectors,s => [s.activeTopicId])
     const activeTopicList = useChatStore(topicSelectors.displayTopics, isEqual)
@@ -20,7 +21,7 @@ const FlatMode = memo(() => {
             {
                 favorite: false,
                 id: "default",
-                title: t("defaultTitle")
+                title: topic.defaultTitle
             },
             ...(activeTopicList || [])
         ],

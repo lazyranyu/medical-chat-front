@@ -4,7 +4,9 @@ import { createStyles } from "antd-style"
 import "antd/dist/reset.css"
 import Image from "next/image"
 import Link from "next/link"
-import { memo } from "react" // 移除 useEffect
+import { memo, useEffect } from "react" // 移除 useEffect
+
+import { ConfigProvider as AntdConfigProvider } from "antd"
 
 import AntdStaticMethods from "@/components/AntdStaticMethods"
 import {
@@ -86,43 +88,72 @@ const AppTheme = memo(
      }) => {
         const { styles, cx, theme } = useStyles()
 
+        // 添加React 19兼容模式配置 - 确保在客户端执行
+        useEffect(() => {
+          // 检查是否在客户端环境
+          if (typeof window !== 'undefined') {
+            try {
+              // 尝试使用ConfigProvider.config方法
+              if (typeof AntdConfigProvider.config === 'function') {
+                AntdConfigProvider.config({
+                  unstable_React19Compat: true
+                });
+                console.log('Antd React 19 compatibility mode enabled');
+              } else {
+                console.log('Antd config method not available, using alternative configuration');
+                // 如果config方法不可用，直接尝试设置全局变量作为备选方案
+                window.__ANT_DESIGN_REACT19_COMPATIBLE__ = true;
+              }
+            } catch (error) {
+              console.warn('Failed to set Antd React 19 compatibility mode:', error);
+              // 如果抛出错误，仍然尝试设置全局变量
+              window.__ANT_DESIGN_REACT19_COMPATIBLE__ = true;
+            }
+          }
+        }, []);
+
         // 删除所有 useState 和 useEffect
 
         return (
-            <ThemeProvider
-                className={cx(styles.app, styles.scrollbar, styles.scrollbarPolyfill)}
-                customTheme={{
-                    neutralColor: defaultNeutralColor, // 直接使用 props
-                    primaryColor: defaultPrimaryColor
-                }}
-                defaultAppearance={defaultAppearance}
-                onAppearanceChange={appearance => {
-                    setCookie(LOBE_THEME_APPEARANCE, appearance)
-                }}
-                theme={{
-                    cssVar: true,
-                    token: {
-                        fontFamily: customFontFamily
-                            ? `${customFontFamily},${theme.fontFamily}`
-                            : undefined
-                    }
-                }}
-                themeMode={defaultAppearance} // 使用 props 值
+            <AntdConfigProvider
+              // 明确设置React19Compat属性
+              theme={{ unstable_React19Compat: true }}
             >
-                {!!customFontURL && <FontLoader url={customFontURL} />}
-                <GlobalStyle />
-                <AntdStaticMethods />
-                <ConfigProvider
-                    config={{
-                        aAs: Link,
-                        imgAs: Image,
-                        imgUnoptimized: true,
-                        proxy: globalCDN ? "unpkg" : undefined
-                    }}
-                >
-                    {children}
-                </ConfigProvider>
-            </ThemeProvider>
+              <ThemeProvider
+                  className={cx(styles.app, styles.scrollbar, styles.scrollbarPolyfill)}
+                  customTheme={{
+                      neutralColor: defaultNeutralColor, // 直接使用 props
+                      primaryColor: defaultPrimaryColor
+                  }}
+                  defaultAppearance={defaultAppearance}
+                  onAppearanceChange={appearance => {
+                      setCookie(LOBE_THEME_APPEARANCE, appearance)
+                  }}
+                  theme={{
+                      cssVar: true,
+                      token: {
+                          fontFamily: customFontFamily
+                              ? `${customFontFamily},${theme.fontFamily}`
+                              : undefined
+                      }
+                  }}
+                  themeMode={defaultAppearance} // 使用 props 值
+              >
+                  {!!customFontURL && <FontLoader url={customFontURL} />}
+                  <GlobalStyle />
+                  <AntdStaticMethods />
+                  <ConfigProvider
+                      config={{
+                          aAs: Link,
+                          imgAs: Image,
+                          imgUnoptimized: true,
+                          proxy: globalCDN ? "unpkg" : undefined
+                      }}
+                  >
+                      {children}
+                  </ConfigProvider>
+              </ThemeProvider>
+            </AntdConfigProvider>
         )
     }
 )

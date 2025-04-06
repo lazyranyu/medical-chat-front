@@ -25,7 +25,8 @@ import { setNamespace } from "@/utils/storeDebug" // 设置调试命名空间的
 
 import { messageSelectors } from "@/store/chat/selectors" // 消息选择器
 import { topicReducer } from "./reducer" // 话题reducer
-import { topicSelectors } from "@/store/chat/selectors" // 话题选择器
+import { topicSelectors } from "@/store/chat/selectors"
+import topic from "@/locales/default/topic"; // 话题选择器
 
 // 设置调试命名空间为"t"
 const n = setNamespace("t")
@@ -97,7 +98,7 @@ export const chatTopic = (set, get) => ({
 
         // 1. 创建话题并绑定这些消息
         const topicId = await internal_createTopic({
-            title: t("defaultTitle", { ns: "topic" }), // 使用默认标题
+            title: topic.defaultTitle, // 使用默认标题
             messages: messages.map(m => m.id) // 收集所有消息ID
         })
 

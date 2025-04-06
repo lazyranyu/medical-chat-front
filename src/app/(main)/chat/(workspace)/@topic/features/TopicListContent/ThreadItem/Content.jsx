@@ -9,6 +9,9 @@ import { Flexbox } from 'react-layout-kit';
 import BubblesLoading from '@/components/BubblesLoading';
 import { LOADING_FLAT } from '@/const/message';
 import { useChatStore } from '@/store/chat';
+import topic from '@/locales/default/topic'
+import common from "@/locales/default/common";
+import thread from "@/locales/default/thread";
 
 const useStyles = createStyles(({ css, token }) => ({
     active: css`
@@ -31,7 +34,7 @@ const useStyles = createStyles(({ css, token }) => ({
 }))
 const { Paragraph } = Typography
 const Content = memo(({ id, title, active, showMore }) => {
-    const { t } = useTranslation(["thread", "common"])
+    // const { t } = useTranslation(["thread", "common"])
 
     const [editing, updateThreadTitle, removeThread] = useChatStore((s) => [
         s.threadRenamingId === id,
@@ -51,7 +54,7 @@ const Content = memo(({ id, title, active, showMore }) => {
             {
                 icon: <Icon icon={PencilLine} />,
                 key: "rename",
-                label: t("rename", { ns: "common" }),
+                label: common.rename,
                 onClick: () => {
                     toggleEditing(true)
                 }
@@ -63,7 +66,7 @@ const Content = memo(({ id, title, active, showMore }) => {
                 danger: true,
                 icon: <Icon icon={Trash} />,
                 key: "delete",
-                label: t("delete", { ns: "common" }),
+                label: common.delete,
                 onClick: () => {
                     if (!id) return
 
@@ -73,7 +76,7 @@ const Content = memo(({ id, title, active, showMore }) => {
                         onOk: async () => {
                             await removeThread(id)
                         },
-                        title: t("actions.confirmRemoveThread")
+                        title: thread.actions.confirmRemoveThread
                     })
                 }
             }

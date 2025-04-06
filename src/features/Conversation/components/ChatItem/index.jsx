@@ -57,7 +57,7 @@ const Item = memo(
          disableEditing,
          inPortalThread = false
      }) => {
-
+        const fontSize = useUserStore(userGeneralSettingsSelectors.fontSize)
         const { styles, cx } = useStyles()
 
         const [type = 'chat'] = useAgentStore((s) => {
@@ -66,8 +66,7 @@ const Item = memo(
         });
 
         const item = useChatStore(messageSelectors.getMessageById(id), isEqual)
-        const fontSize = useUserStore(userGeneralSettingsSelectors.fontSize)
-        console.log("111111111111111111111111")
+        console.log("item",item)
         const [
             isMessageLoading,
             generating,
@@ -186,16 +185,20 @@ const Item = memo(
                 enableCustomFootnotes: item?.role === "assistant",
                 rehypePlugins: item?.role === "user" ? undefined : rehypePlugins,
                 remarkPlugins: item?.role === "user" ? undefined : remarkPlugins,
-                showCitations:
-                    item?.role === "user"
-                        ? undefined
-                        : item?.search?.citations &&
-                        // if the citations are all empty, we should not show the citations
-                        item?.search?.citations.length > 0 &&
-                        // if the citations's url and title are all the same, we should not show the citations
-                        item?.search?.citations.every(item => item.title !== item.url)
             }),
             [components, markdownCustomRender, item?.role, item?.search]
+        )
+
+        // 提取showCitations到一个单独的属性
+        const showCitations = useMemo(
+            () => item?.role === "user"
+                ? undefined
+                : item?.search?.citations &&
+                // if the citations are all empty, we should not show the citations
+                item?.search?.citations.length > 0 &&
+                // if the citations's url and title are all the same, we should not show the citations
+                item?.search?.citations.every(item => item.title !== item.url),
+            [item?.role, item?.search]
         )
 
         const onChange = useCallback(value => updateMessageContent(id, value), [id])

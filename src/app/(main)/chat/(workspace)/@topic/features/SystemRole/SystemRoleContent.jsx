@@ -19,6 +19,8 @@ import { systemStatusSelectors } from '@/store/global/selectors';
 import { defaultMeta } from '@/const/session';
 
 import { useStyles } from './style';
+import common from "@/locales/default/common";
+import setting from "@/locales/default/setting";
 
 const SystemRole = memo(() => {
   const [editing, setEditing] = useState(false);
@@ -42,7 +44,7 @@ const SystemRole = memo(() => {
     value: showSystemRole,
   });
 
-  const { t } = useTranslation('common');
+  // const { t } = useTranslation('common');
 
   const handleOpenWithEdit = () => {
     setEditing(true);
@@ -57,9 +59,9 @@ const SystemRole = memo(() => {
     <Flexbox height={'fit-content'}>
       <SidebarHeader
         actions={
-          <ActionIcon icon={Edit} onClick={handleOpenWithEdit} size={'small'} title={t('edit')} />
+          <ActionIcon icon={Edit} onClick={handleOpenWithEdit} size={'small'} title={common.edit} />
         }
-        title={t('settingAgent.prompt.title', { ns: 'setting' })}
+        title={setting.settingAgent.prompt.title}
       />
       <Flexbox
         className={styles.promptBox}
@@ -93,13 +95,13 @@ const SystemRole = memo(() => {
               onEditingChange={setEditing}
               onOpenChange={setOpen}
               openModal={open}
-              placeholder={`${t('settingAgent.prompt.placeholder', { ns: 'setting' })}...`}
+              placeholder={`${setting.settingAgent.prompt.placeholder}...`}
               styles={{ markdown: systemRole ? {} : { opacity: 0.5 } }}
               text={{
-                cancel: t('cancel'),
-                confirm: t('ok'),
-                edit: t('edit'),
-                title: t('settingAgent.prompt.title', { ns: 'setting' }),
+                cancel: common.cancel,
+                confirm: common.ok,
+                edit: common.edit,
+                title: setting.settingAgent.prompt.title,
               }}
               value={systemRole}
             />

@@ -3,6 +3,7 @@ import dayjs from "dayjs"
 import React, { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Flexbox } from "react-layout-kit"
+import topic from "@/locales/default/topic";
 
 const preformat = id =>
     id.startsWith("20")
@@ -25,9 +26,9 @@ const useStyles = createStyles(({ css, token, responsive }) => ({
 }))
 
 const TopicGroupItem = memo(({ id, title }) => {
-  const { t } = useTranslation("topic")
-  const { styles } = useStyles()
-  const timeTitle = preformat(id) ?? t(`groupTitle.byTime.${id}`)
+  // const { t } = useTranslation("topic")
+  const { styles } = useStyles();
+  const timeTitle = preformat(id) ?? topic.groupTitle.byTime[id];
 
   return (
       <Flexbox

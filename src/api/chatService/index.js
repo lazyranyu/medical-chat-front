@@ -62,7 +62,9 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
                 onMessage?.({ type: 'text', text: ' ' });
             }
 
-            buffer += decoder.decode(value, { stream: true });
+            // 使用逐字模式处理内容
+            const newContent = decoder.decode(value, { stream: true });
+            buffer += newContent;
 
             // 处理当前格式的数据块
             const parts = buffer.split('"\\n\\n"');
@@ -75,8 +77,22 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
                     try {
                         // 累积内容
                         fullContent += content;
-                        // 发送格式化的消息块
-                        onMessage?.({ type: 'text', text: content });
+                        
+                        // 如果内容有多个字符，分割为单个字符进行发送以增强逐字效果
+                        if (content.length > 1) {
+                            const chars = content.split('');
+                            for (const char of chars) {
+                                // 发送单个字符
+                                onMessage?.({ type: 'text', text: char });
+                                
+                                // 可选：添加小延迟让逐字效果更明显
+                                // 注意：这会使整体响应变慢，请根据需求调整或删除
+                                // await new Promise(resolve => setTimeout(resolve, 5));
+                            }
+                        } else {
+                            // 内容只有一个字符时直接发送
+                            onMessage?.({ type: 'text', text: content });
+                        }
                     } catch (e) {
                         console.error('解析错误:', e, content);
                     }

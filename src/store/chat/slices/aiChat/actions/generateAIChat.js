@@ -20,6 +20,7 @@ import { useAgentStore } from "@/store/agent"
 import { chatHelpers } from "@/store/chat/helpers"
 import { messageMapKey } from "@/store/chat/utils/messageMapKey"
 import { setNamespace } from "@/utils/storeDebug"
+import { optimizedDebounce } from "@/store/chat/utils"
 
 import { messageSelectors, topicSelectors } from "../../../selectors"
 import {
@@ -28,6 +29,7 @@ import {
   getAgentKnowledge
 } from "./helpers"
 import {DEFAULT_AGENT_CHAT_CONFIG} from "@/const/settings";
+import {useChatStore} from "@/store/chat";
 
 // 设置调试命名空间
 const n = setNamespace("ai")
@@ -162,7 +164,6 @@ export const generateAIChat = (set, get) => ({
       tempMessageId,
       skipRefresh: !onlyAddUserMessage && newMessage.fileList?.length === 0
     })])
-    console.log('internal_createMessage', id);
     // 如果有临时消息ID，关闭其加载状态
     if (tempMessageId) get().internal_toggleMessageLoading(false, tempMessageId)
 
@@ -303,11 +304,13 @@ export const generateAIChat = (set, get) => ({
       topicId: activeTopicId,
       threadId: params?.threadId,
     };
-    const [assistantId] = await Promise.all([get().internal_createMessage(assistantMessage)]);
 
+    // 异步创建助手消息
+    const assistantId = await get().internal_createMessage(assistantMessage);
+    console.log('internal_createMessage', assistantId)
     // 3. 获取AI响应
     await internal_fetchAIChatMessage(messages, assistantId, params);
-
+    await refreshMessages();
     // 5. 当上下文消息超过历史限制时进行摘要
     const historyCount =
         chatConfig.historyCount || DEFAULT_AGENT_CHAT_CONFIG.historyCount;
@@ -427,8 +430,6 @@ export const generateAIChat = (set, get) => ({
         await refreshMessages();
       },
       onFinish: async (content) => {
-        
-        // update the content after fetch result
         await internal_updateMessageContent(assistantId, content);
       },
       onMessageHandle: async (chunk) => {
@@ -449,7 +450,6 @@ export const generateAIChat = (set, get) => ({
     // 关闭聊天加载状态
     internal_toggleChatLoading(false, assistantId, n("generateMessage(end)"))
 
-    return {};
   },
 
   /**

@@ -6,7 +6,6 @@ import { Flexbox } from 'react-layout-kit';
 import PropTypes from 'prop-types';
 
 import { usePlatform } from '@/hooks/usePlatform';
-import AntdWarningDisabler from '@/components/AntdWarningDisabler';
 
 const Layout = memo(({ children, nav }) => {
     const { isPWA } = usePlatform();
@@ -14,8 +13,6 @@ const Layout = memo(({ children, nav }) => {
 
     return (
         <>
-            {/* 禁用 antd 兼容性警告 */}
-            <AntdWarningDisabler />
             
             <Flexbox
                 height={[

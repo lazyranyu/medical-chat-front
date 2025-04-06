@@ -242,7 +242,7 @@ export const createMessageSlice = (set, get) => ({
    * 触发SWR重新获取数据
    */
   refreshMessages: async () => {
-    await mutate([SWR_USE_FETCH_MESSAGES, get().activeId, get().activeTopicId])
+    await mutate([SWR_USE_FETCH_MESSAGES, get().activeId, get().activeTopicId]);
   },
 
   /**
@@ -252,31 +252,17 @@ export const createMessageSlice = (set, get) => ({
    * @param {Object} payload - 包含动作类型和数据的载荷
    */
   internal_dispatchMessage: payload => {
-    const { activeId } = get()
+    const { activeId } = get();
 
-    if (!activeId) return
+    if (!activeId) return;
 
-    const messages = messagesReducer(
-        messageSelectors.activeBaseChats(get()),
-        payload
-    )
+    const messages = messagesReducer(messageSelectors.activeBaseChats(get()), payload);
 
-    const nextMap = {
-      ...get().messagesMap,
-      [messageSelectors.currentChatKey(get())]: messages
-    }
+    const nextMap = { ...get().messagesMap, [messageSelectors.currentChatKey(get())]: messages };
 
-    if (isEqual(nextMap, get().messagesMap)) return
+    if (isEqual(nextMap, get().messagesMap)) return;
 
-    // 检查是否需要立即更新（用于流式响应）
-    const isImmediate = payload.immediate === true
-    
-    set({ messagesMap: nextMap }, false, {
-      type: `dispatchMessage/${payload.type}`,
-      payload,
-      // 添加立即更新标志
-      immediate: isImmediate
-    })
+    set({ messagesMap: nextMap }, false, { type: `dispatchMessage/${payload.type}`, payload });
   },
 
   /**
@@ -300,7 +286,6 @@ export const createMessageSlice = (set, get) => ({
    * 
    * @param {string} id - 消息ID
    * @param {string} content - 新的消息内容
-   * @param {Array} toolCalls - 工具调用数据
    */
   internal_updateMessageContent: async (id, content) => {
     const {
@@ -315,16 +300,10 @@ export const createMessageSlice = (set, get) => ({
       value: { content },
       immediate: true
     })
-
-    // 后台更新数据库，不阻塞UI
-    // 使用Promise.resolve().then()将数据库更新移到下一个微任务队列
-    Promise.resolve().then(async () => {
-      await messageService.updateMessage(id, content);
-      // 使用较低优先级刷新消息，避免阻塞UI
-      setTimeout(() => {
-        refreshMessages();
-      }, 0);
+    await messageService.updateMessage(id, {
+      content,
     });
+    await refreshMessages();
   },
 
   /**
@@ -339,6 +318,7 @@ export const createMessageSlice = (set, get) => ({
       internal_createTmpMessage,
       refreshMessages,
       internal_toggleMessageLoading,
+      internal_dispatchMessage,
     } = get()
     let tempId = context?.tempMessageId
 
@@ -350,6 +330,13 @@ export const createMessageSlice = (set, get) => ({
     }
 
     const id = await messageService.createMessage(message)
+
+    // 替换临时ID为真正的ID
+    internal_dispatchMessage({
+      type: "replaceMessageId",
+      oldId: tempId,
+      newId: id
+    })
 
     if (!context?.skipRefresh) {
       internal_toggleMessageLoading(true, tempId)

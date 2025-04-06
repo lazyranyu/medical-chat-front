@@ -30,8 +30,8 @@ import topic from "@/locales/default/topic";
  * 组件使用了React.memo进行性能优化，避免不必要的重新渲染
  */
 const TopicListContent = memo(() => {
-  // 获取国际化翻译函数
-  const { t } = useTranslation("topic")
+  // // 获取国际化翻译函数
+  // const { t } = useTranslation("topic")
 
   // 获取当前主题模式（深色/浅色）
   const { isDarkMode } = useThemeMode()
@@ -71,11 +71,11 @@ const TopicListContent = memo(() => {
         {topicLength === 0 && visible && (
             <Flexbox paddingInline={8}>
               <EmptyCard
-                  alt={t("guide.desc")} // 图片替代文本
+                  alt={topic.guide.desc} // 图片替代文本
                   cover={imageUrl(
                       `empty_topic_${isDarkMode ? "dark" : "light"}.webp`
                   )} // 根据当前主题选择不同的图片
-                  desc={t("guide.desc")} // 描述文本
+                  desc={topic.guide.desc} // 描述文本
                   height={120} // 卡片高度
                   imageProps={{
                     priority: true // 图片优先加载
@@ -85,7 +85,7 @@ const TopicListContent = memo(() => {
                     updateGuideState({ topic: visible })
                   }}
                   style={{ flex: "none", marginBottom: 12 }} // 卡片样式
-                  title={t("guide.title")} // 卡片标题
+                  title={topic.guide.title} // 卡片标题
                   visible={visible} // 控制卡片可见性
                   width={200} // 卡片宽度
               />
