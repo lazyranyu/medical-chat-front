@@ -4,9 +4,13 @@ import { apiClient, fetcher } from '../apiClient';
 
 // 将类改为对象，使其可以直接被导入使用
 export const messageService = {
-    createMessage: async ({...params }) => {
+    toDbSessionId: (sessionId) => {
+        return sessionId === INBOX_SESSION_ID ? null : sessionId;
+    },
+    createMessage: async ({sessionId,...params }) => {
         const response = await apiClient.post('/message/create', {
-            ...params,
+            sessionId: messageService.toDbSessionId(sessionId),
+            ...params
         });
         return response.data.data;
     },
@@ -126,10 +130,6 @@ export const messageService = {
     removeAllMessages: async () => {
         const response = await apiClient.post('/message/removeAllMessages');
         return response.data;
-    },
-
-    toDbSessionId: (sessionId) => {
-        return sessionId === INBOX_SESSION_ID ? null : sessionId;
     },
 
     hasMessages: async () => {

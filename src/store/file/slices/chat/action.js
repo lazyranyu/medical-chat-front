@@ -1,6 +1,5 @@
 import { t } from "i18next"
 
-import { notification } from "@/components/AntdStaticMethods"
 import { fileService } from "@/api/file"
 import { UPLOAD_NETWORK_ERROR } from "@/api/upload"
 // import { userService } from "@/api/user"
@@ -145,8 +144,6 @@ export const createFileSlice = (set, get) => ({
               : typeof error === "string"
                   ? error
                   : t("upload.unknownError", { ns: "error", reason: error.message })
-
-          notification.error({ description, message: t("upload.uploadFailed", { ns: "error" }) })
         }
 
         dispatchChatUploadFileList({ id: file.name, type: "removeFile" })

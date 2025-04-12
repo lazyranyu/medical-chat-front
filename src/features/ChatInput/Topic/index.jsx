@@ -18,19 +18,16 @@ import chat from "@/locales/default/chat"
 //   // 这里可以添加模拟话题切换逻辑
 //   // 例如：staticHasTopic = !staticHasTopic （需配合 useState 实现状态切换）
 // }
-const SaveTopic = memo(({ mobile }) => {
+const SaveTopic = memo(({ }) => {
   // 使用useStoreSelector替代直接使用useChatStore
   const activeTopicId = useStoreSelector(useChatStore, state => state.activeTopicId);
+
   const openNewTopicOrSaveTopic = useStoreSelector(useChatStore, state => state.openNewTopicOrSaveTopic);
   
   // 计算hasTopic
   const hasTopic = !!activeTopicId;
-  
-  // // 替换原有的状态获取
-  // const [hasTopic, openNewTopicOrSaveTopic] = [
-  //   staticHasTopic,
-  //   staticOpenNewTopicOrSaveTopic
-  // ]
+    console.log("hasTopic",hasTopic);
+
   const { mutate, isValidating } = useActionSWR(
       "openNewTopicOrSaveTopic",
       openNewTopicOrSaveTopic
@@ -50,60 +47,16 @@ const SaveTopic = memo(({ mobile }) => {
     preventDefault: true
   })
 
-  if (mobile) {
-    return (
-        <Popconfirm
-            arrow={false}
-            okButtonProps={{ danger: false, type: "primary" }}
-            onConfirm={() => mutate()}
-            onOpenChange={setConfirmOpened}
-            open={confirmOpened}
-            placement={"top"}
-            title={
-              <div
-                  style={{
-                    alignItems: "center",
-                    display: "flex",
-                    marginBottom: "8px"
-                  }}
-              >
-                <div
-                    style={{
-                      marginRight: "16px",
-                      whiteSpace: "pre-line",
-                      wordBreak: "break-word"
-                    }}
-                >
-                  {hasTopic
-                      ? chat.topic.checkOpenNewTopic
-                      : chat.topic.checkSaveCurrentMessages}
-                </div>
-                <HotKeys inverseTheme={false} keys={hotkeys} />
-              </div>
-            }
-        >
-          <Tooltip styles={{ root: {} }}>
-            <ActionIcon
-                aria-label={desc}
-                icon={icon}
-                loading={isValidating}
-                onClick={() => setConfirmOpened(true)}
-            />
-          </Tooltip>
-        </Popconfirm>
-    )
-  } else {
     return (
         <Tooltip title={<HotKeys desc={desc} inverseTheme keys={hotkeys} />} styles={{ root: {} }}>
-          <Button
-              aria-label={desc}
-              icon={<Icon icon={icon} />}
-              loading={isValidating}
-              onClick={() => mutate()}
-          />
+            <Button
+                aria-label={desc}
+                icon={<Icon icon={icon} />}
+                loading={isValidating}
+                onClick={() => mutate()}
+            />
         </Tooltip>
     )
-  }
 })
 
 export default SaveTopic

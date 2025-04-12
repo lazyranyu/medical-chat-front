@@ -19,7 +19,8 @@ if (typeof window !== 'undefined') {
   console.error = function(...args) {
     // 过滤掉antd的React兼容性警告
     if (args[0] && typeof args[0] === 'string' && 
-        args[0].includes('[antd: compatible] antd v5 support React is 16 ~ 18')) {
+        (args[0].includes('[antd: compatible] antd v5 support React is 16 ~ 18') ||
+         args[0].includes('Warning: [antd: compatible]'))) {
       return;
     }
     originalError.apply(console, args);
@@ -34,7 +35,7 @@ import StyleRegistry from "@/layout/StyleRegistry";
 import AppTheme from "@/layout/AppTheme";
 
 // 添加兼容性组件
-import AntdReact19Compat from "@/components/AntdReact19Compat";
+// import AntdReact19Compat from "@/components/AntdReact19Compat";
 
 export const generateViewport = async () => {
   return {
@@ -52,8 +53,8 @@ export default function RootLayout({ children }) {
   return (
       <html lang="en">
       <body suppressHydrationWarning>
-      {/* 在最外层添加兼容性组件，确保早期初始化 */}
-      <AntdReact19Compat />
+      {/*/!* 在最外层添加兼容性组件，确保早期初始化 *!/*/}
+      {/*<AntdReact19Compat />*/}
       <StyleRegistry>
           <AppTheme>
               {children}

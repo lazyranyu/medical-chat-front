@@ -1,74 +1,44 @@
-import { initialAuthState } from './initialState';
+import { enableClerk } from "@/const/auth"
 
-/**
- * 创建用户认证相关状态切片
- * @param {Function} set - Zustand 的 set 函数
- * @param {Function} get - Zustand 的 get 函数
- * @returns {Object} 用户认证相关状态和动作
- */
 export const createAuthSlice = (set, get) => ({
-  ...initialAuthState,
-
-  /**
-   * 设置登录状态
-   * @param {boolean} isLoggedIn - 是否已登录
-   * @param {Object} authInfo - 认证信息
-   */
-  setLoginStatus: (isLoggedIn, authInfo = {}) => set((state) => {
-    // 确保 state.auth 存在
-    const currentAuth = state.auth || initialAuthState.auth;
-    
-    return {
-      auth: {
-        ...currentAuth,
-        isLoggedIn,
-        ...(isLoggedIn ? authInfo : { token: null, tokenExpiry: null }),
-      },
-    };
-  }),
-
-  /**
-   * 登录
-   * @param {string} token - 认证令牌
-   * @param {Date|string} tokenExpiry - 令牌过期时间
-   */
-  login: (token, tokenExpiry) => {
-    const expiry = typeof tokenExpiry === 'string' ? new Date(tokenExpiry) : tokenExpiry;
-    
-    set((state) => {
-      // 确保 state.auth 存在
-      const currentAuth = state.auth || initialAuthState.auth;
-      
-      return {
-        auth: {
-          ...currentAuth,
-          isLoggedIn: true,
-          token,
-          tokenExpiry: expiry,
-        },
-      };
-    });
+  enableAuth: () => {
+    return enableClerk || get()?.enabledNextAuth || false
   },
+  logout: async () => {
+    if (enableClerk) {
+      get().clerkSignOut?.({ redirectUrl: location.toString() })
 
-  /**
-   * 登出
-   */
-  logout: () => set((state) => {
-    // 确保 state.auth 存在
-    const currentAuth = state.auth || initialAuthState.auth;
-    
-    return {
-      auth: {
-        ...currentAuth,
-        isLoggedIn: false,
-        token: null,
-        tokenExpiry: null,
-      },
-    };
-  }),
+      return
+    }
 
-  /**
-   * 重置认证状态
-   */
-  resetAuth: () => set({ auth: initialAuthState.auth }),
-});
+    const enableNextAuth = get().enabledNextAuth
+    if (enableNextAuth) {
+      const { signOut } = await import("next-auth/react")
+      signOut()
+    }
+  },
+  openLogin: async () => {
+    if (enableClerk) {
+      const reditectUrl = location.toString()
+      get().clerkSignIn?.({
+        fallbackRedirectUrl: reditectUrl,
+        signUpForceRedirectUrl: reditectUrl,
+        signUpUrl: "/signup"
+      })
+
+      return
+    }
+
+    const enableNextAuth = get().enabledNextAuth
+    if (enableNextAuth) {
+      const { signIn } = await import("next-auth/react")
+      // Check if only one provider is available
+      const providers = get()?.oAuthSSOProviders
+      if (providers && providers.length === 1) {
+        signIn(providers[0])
+        return
+      }
+      signIn()
+    }
+  }
+})

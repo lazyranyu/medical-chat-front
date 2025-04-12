@@ -208,8 +208,7 @@ export const generateAIChat = (set, get) => ({
 
       // 检查活跃话题并自动更新话题标题
       if (newTopicId) {
-        const chats = messageSelectors.activeBaseChats(get())
-        await get().summaryTopicTitle(newTopicId, chats)
+        await get().summaryTopicTitle(newTopicId)
         return
       }
 
@@ -217,8 +216,7 @@ export const generateAIChat = (set, get) => ({
 
       // 如果话题存在但没有标题，则生成标题
       if (topic && !topic.title) {
-        const chats = messageSelectors.activeBaseChats(get())
-        await get().summaryTopicTitle(topic.id, chats)
+        await get().summaryTopicTitle(topic.id)
       }
     }
 

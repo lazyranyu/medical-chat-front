@@ -31,7 +31,7 @@ export const topicService = {
                 ...params,
             },
         });
-        return response.data;
+        return response.data.data;
     },
 
     getAllTopics: async () => {
@@ -61,7 +61,9 @@ export const topicService = {
     },
 
     updateTopic: async (id, data) => {
-        const response = await apiClient.post('/topic/update', { id, value: data });
+        // 将 id 添加到 data 对象中
+        const requestData = { ...data, id };
+        const response = await apiClient.post('/topic/update', requestData);
         return response.data;
     },
 
@@ -78,17 +80,12 @@ export const topicService = {
     removeAllTopic: async () => {
         const response = await apiClient.post('/topic/removeAll');
         return response.data;
+    },
+    summaryTopicTitle: async (topicId) => {
+        const response = await apiClient.post('/topic/summaryTitle', {topicId});
+        return response.data.data;
     }
 };
-
-// 添加话题摘要服务
-export const topicSummaryService = {
-    summaryTopicTitle: async (params) => {
-        const response = await apiClient.post('/topic/summaryTitle', params);
-        return response.data;
-    }
-};
-
 // SWR Hooks
 
 

@@ -1,19 +1,30 @@
-/**
- * 用户偏好设置相关选择器
- */
+import { DEFAULT_PREFERENCE } from "@/const/user"
+
+const useCmdEnterToSend = s => s.preference.useCmdEnterToSend || false
+const topicDisplayMode = s =>
+    s.preference.topicDisplayMode || DEFAULT_PREFERENCE.topicDisplayMode
+
+const userAllowTrace = s => s.preference.telemetry
+
+const hideSyncAlert = s => s.preference.hideSyncAlert
+
+const hideSettingsMoveGuide = s => s.preference.guide?.moveSettingsToAvatar
+
+const showUploadFileInKnowledgeBaseTip = s =>
+    s.preference.guide?.uploadFileInKnowledgeBase
+
+const shouldTriggerFileInKnowledgeBaseTip = s =>
+    !(typeof s.preference.guide?.moveSettingsToAvatar === "boolean")
+
+const isPreferenceInit = s => s.isUserStateInit
+
 export const preferenceSelectors = {
-    // 获取用户偏好设置
-    preference: (s) => s.preference,
-    
-    // 获取主题
-    theme: (s) => s.preference.theme,
-    
-    // 获取语言
-    language: (s) => s.preference.language,
-    
-    // 是否使用 Cmd+Enter 发送消息
-    useCmdEnterToSend: (s) => s.preference.useCmdEnterToSend,
-    
-    // 获取主题显示模式
-    topicDisplayMode: (s) => s.preference.topicDisplayMode || 'byTime',
-};
+    hideSettingsMoveGuide,
+    hideSyncAlert,
+    isPreferenceInit,
+    shouldTriggerFileInKnowledgeBaseTip,
+    showUploadFileInKnowledgeBaseTip,
+    topicDisplayMode,
+    useCmdEnterToSend,
+    userAllowTrace
+}

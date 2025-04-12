@@ -12,9 +12,13 @@ import { groupTopicsByTime } from "@/utils/client/topic" // 按时间分组话�
 /**
  * 获取当前活动会话的所有话题
  * @param {Object} s - 状态对象
- * @returns {Array|undefined} 当前会话的话题列表
+ * @returns {Array} 当前会话的话题列表，始终返回数组
  */
-const currentTopics = s => s.topicMaps[s.activeId]
+const currentTopics = s => {
+  const topics = s.topicMaps[s.activeId]
+  // 确保返回的值是数组
+  return Array.isArray(topics) ? topics : []
+}
 
 /**
  * 获取当前选中的活动话题
@@ -46,14 +50,20 @@ const displayTopics = s =>
  * @param {Object} s - 状态对象
  * @returns {Array} 已收藏的话题列表
  */
-const currentFavTopics = s => currentTopics(s)?.filter(s => s.favorite) || []
+const currentFavTopics = s => {
+  const topics = currentTopics(s)
+  return Array.isArray(topics) ? topics.filter(t => t.favorite) : []
+}
 
 /**
  * 获取当前会话中未收藏的话题
  * @param {Object} s - 状态对象
  * @returns {Array} 未收藏的话题列表
  */
-const currentUnFavTopics = s => currentTopics(s)?.filter(s => !s.favorite) || []
+const currentUnFavTopics = s => {
+  const topics = currentTopics(s)
+  return Array.isArray(topics) ? topics.filter(t => !t.favorite) : []
+}
 
 /**
  * 获取当前会话话题的数量

@@ -47,9 +47,12 @@ const UserAvatar = forwardRef(
     ({ size = 40, background, clickable, className, style, ...rest }, ref) => {
         const { styles, cx } = useStyles();
         // 使用 useStoreSelector 代替直接使用 useUserStore
-        const avatar = useStoreSelector(useUserStore, userProfileSelectors.userAvatar);
-        const username = useStoreSelector(useUserStore, userProfileSelectors.username);
-        const isSignedIn = useStoreSelector(useUserStore, authSelectors.isLogin);
+        const [avatar, username] = useUserStore((s) => [
+            userProfileSelectors.userAvatar(s),
+            userProfileSelectors.username(s),
+        ]);
+
+        const isSignedIn = useUserStore(authSelectors.isLogin);
         // const [avatar, username] = useUserStore((s) => [
         //     userProfileSelectors.userAvatar(s),
         //     userProfileSelectors.username(s),

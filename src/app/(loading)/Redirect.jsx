@@ -7,9 +7,9 @@ import { useStoreSelector } from '@/hooks/useStoreSelector';
 
 const Redirect = memo(() => {
     const router = useRouter();
-
-    const isLogin = useStoreSelector(useUserStore, authSelectors.isLogin);
-
+    //todo login
+    // const isLogin = useStoreSelector(useUserStore, authSelectors.isLogin);
+    const isLogin = false;
     const navToChat = () => {
         // setLoadingStage(AppLoadingStage.GoToChat);
         router.replace('/chat');

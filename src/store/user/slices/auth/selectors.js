@@ -1,24 +1,50 @@
+import { t } from "i18next"
+
+import { enableClerk } from "@/const/auth"
+import { BRANDING_NAME } from "@/const/branding"
+
+const DEFAULT_USERNAME = BRANDING_NAME
+
+const nickName = s => {
+  if (!s.enableAuth()) return t("userPanel.defaultNickname", { ns: "common" })
+
+  if (s.isSignedIn) return s.user?.fullName || s.user?.username
+
+  return t("userPanel.anonymousNickName", { ns: "common" })
+}
+
+const username = s => {
+  if (!s.enableAuth()) return DEFAULT_USERNAME
+
+  if (s.isSignedIn) return s.user?.username
+
+  return "anonymous"
+}
+
+export const userProfileSelectors = {
+  nickName,
+  userAvatar: s => s.user?.avatar || "",
+  userId: s => s.user?.id,
+  userProfile: s => s.user,
+  username
+}
+
 /**
- * 用户认证相关选择器
+ * 使用此方法可以兼容不需要登录鉴权的情况
  */
+const isLogin = s => {
+  // 如果没有开启鉴权，说明不需要登录，默认是登录态
+  if (!s.enableAuth()) return true
+
+  return s.isSignedIn
+}
+
 export const authSelectors = {
-  // 是否已登录 - 避免使用可选链
-  isLoggedIn: (s) => Boolean(s.auth && s.auth.isLoggedIn),
-
-  // 兼容旧代码 - 避免直接访问可能不存在的属性
-  isLogin: (s) => Boolean(s.auth && s.auth.isLoggedIn),
-
-  // 获取认证令牌 - 使用安全访问
-  token: (s) => (s.auth && s.auth.token) || null,
-
-  // 获取令牌过期时间 - 使用安全访问
-  tokenExpiry: (s) => (s.auth && s.auth.tokenExpiry) || null,
-
-  // 令牌是否有效 - 使用安全访问
-  isTokenValid: (s) => {
-    if (!s.auth || !s.auth.token || !s.auth.tokenExpiry) return false;
-    
-    const expiry = new Date(s.auth.tokenExpiry);
-    return expiry > new Date();
-  },
-};
+  enabledAuth: s => s.enableAuth(),
+  enabledNextAuth: s => !!s.enabledNextAuth,
+  isLoaded: s => s.isLoaded,
+  isLogin,
+  isLoginWithAuth: s => s.isSignedIn,
+  isLoginWithClerk: s => (s.isSignedIn && enableClerk) || false,
+  isLoginWithNextAuth: s => (s.isSignedIn && !!s.enabledNextAuth) || false
+}

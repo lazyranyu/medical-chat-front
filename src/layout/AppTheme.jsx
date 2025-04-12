@@ -141,7 +141,6 @@ const AppTheme = memo(
               >
                   {!!customFontURL && <FontLoader url={customFontURL} />}
                   <GlobalStyle />
-                  <AntdStaticMethods />
                   <ConfigProvider
                       config={{
                           aAs: Link,

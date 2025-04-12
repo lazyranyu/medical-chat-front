@@ -16,10 +16,13 @@ import { produce } from "immer" // 用于不可变状态更新的库
  * @returns {Array} 更新后的话题状态
  */
 export const topicReducer = (state = [], payload) => {
+  // 确保state是数组
+  const currentState = Array.isArray(state) ? state : []
+  
   switch (payload.type) {
     case "addTopic": {
       // 添加新话题到列表
-      return produce(state, draftState => {
+      return produce(currentState, draftState => {
         // 在列表开头添加新话题
         draftState.unshift({
           ...payload.value,
@@ -38,7 +41,7 @@ export const topicReducer = (state = [], payload) => {
 
     case "updateTopic": {
       // 更新指定ID的话题内容
-      return produce(state, draftState => {
+      return produce(currentState, draftState => {
         const { value, id } = payload
         const topicIndex = draftState.findIndex(topic => topic.id === id)
 
@@ -57,7 +60,7 @@ export const topicReducer = (state = [], payload) => {
 
     case "deleteTopic": {
       // 删除指定ID的话题
-      return produce(state, draftState => {
+      return produce(currentState, draftState => {
         const topicIndex = draftState.findIndex(
             topic => topic.id === payload.id
         )
@@ -70,7 +73,7 @@ export const topicReducer = (state = [], payload) => {
 
     default: {
       // 对于未知的action类型，返回原状态
-      return state
+      return currentState
     }
   }
 }

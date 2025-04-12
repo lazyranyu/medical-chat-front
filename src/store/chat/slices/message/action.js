@@ -234,7 +234,7 @@ export const createMessageSlice = (set, get) => ({
             )
           }
         }
-    )()  // 添加括号执行返回的函数
+    )
   },
 
   /**

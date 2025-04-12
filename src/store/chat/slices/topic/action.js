@@ -23,7 +23,7 @@ import { systemAgentSelectors } from "@/store/user/selectors" // 系统代理选
 import { merge } from "@/utils/merge" // 合并对象的工具函数
 import { setNamespace } from "@/utils/storeDebug" // 设置调试命名空间的工具
 
-import { messageSelectors } from "@/store/chat/selectors" // 消息选择器
+import {messageSelectors as messageSelector, messageSelectors} from "@/store/chat/selectors" // 消息选择器
 import { topicReducer } from "./reducer" // 话题reducer
 import { topicSelectors } from "@/store/chat/selectors"
 import topic from "@/locales/default/topic"; // 话题选择器
@@ -53,10 +53,10 @@ export const chatTopic = (set, get) => ({
         const { switchTopic, saveToTopic, refreshMessages, activeTopicId } = get()
         const hasTopic = !!activeTopicId
 
-        if (hasTopic) switchTopic()
+        if (hasTopic) switchTopic();
         else {
-            await saveToTopic()
-            refreshMessages()
+            await saveToTopic();
+            refreshMessages();
         }
     },
 
@@ -67,14 +67,15 @@ export const chatTopic = (set, get) => ({
      * @returns {string} 新创建的话题ID
      */
     createTopic: async () => {
-        const {internal_createTopic } = get()
+        const {activeId,internal_createTopic } = get()
 
         const messages = messageSelectors.activeBaseChats(get())
 
         // 设置正在创建话题的状态
         set({ creatingTopic: true }, false, n("creatingTopic/start"))
         const topicId = await internal_createTopic({
-            title: t("defaultTitle", { ns: "topic" }), // 使用默认标题
+            sessionId: activeId,
+            title: topic.defaultTitle, // 使用默认标题
             messages: messages.map(m => m.id) // 收集所有消息ID
         })
         // 设置创建话题完成的状态
@@ -152,12 +153,10 @@ export const chatTopic = (set, get) => ({
      * 使用AI生成话题的标题摘要
      * 
      * @param {string} topicId - 话题ID
-     * @param {Array} messages - 消息列表
      */
-    summaryTopicTitle: async (topicId, msgs) => {
+    summaryTopicTitle: async (topicId) => {
         const {
-            internal_updateTopicTitleInSummary,
-            internal_updateTopicLoading
+            internal_updateTopicTitleInSummary
         } = get()
         // 获取话题对象
         const topic = topicSelectors.getTopicById(topicId)(get())
@@ -172,16 +171,15 @@ export const chatTopic = (set, get) => ({
         const topicConfig = systemAgentSelectors.topic(useUserStore.getState())
 
         // 自动总结话题标题
-        const data = await topicSummaryService.summaryTopicTitle({
-            topic: { id: topicId },
-            messages: msgs,
-        })
+        const data = await topicService.summaryTopicTitle(
+            topicId,
+        )
 
         // 完成时更新话题标题
-        await get().internal_updateTopic(topicId, { title: data.title })
+        await get().internal_updateTopic(topicId, { title: data })
 
         // 实时更新标题
-        internal_updateTopicTitleInSummary(topicId, data.title)
+        internal_updateTopicTitleInSummary(topicId, data)
     },
 
     /**
@@ -235,14 +233,19 @@ export const chatTopic = (set, get) => ({
      * @param {string} sessionId - 会话ID
      * @returns {Object} SWR响应对象
      */
-    useFetchTopics: (enable) =>
-        useClientDataSWR(
-            enable ? [SWR_USE_FETCH_TOPIC] : null,
-            async ([, sessionId]) => topicService.getTopics({ sessionId }),
+    useFetchTopics: (enable,sessionId) =>
+    {
+        console.log('useFetchTopics params:', { enable, sessionId });
+        return  useClientDataSWR(
+            enable ? [SWR_USE_FETCH_TOPIC, sessionId] : null,
+            async ([, sessionId]) => {
+                return topicService.getTopics({ sessionId })
+            },
             {
                 suspense: true,
                 fallbackData: [],
                 onSuccess: topics => {
+
                     const nextMap = { ...get().topicMaps, [sessionId]: topics }
 
                     // 如果话题已初始化且映射没有变化，不需要更新
@@ -255,7 +258,8 @@ export const chatTopic = (set, get) => ({
                     )
                 }
             }
-        ),
+        )
+    },
 
     /**
      * 搜索话题

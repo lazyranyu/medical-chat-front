@@ -1,7 +1,6 @@
 import { t } from "i18next"
 import { sha256 } from "js-sha256"
 
-import { message } from "@/components/AntdStaticMethods"
 import { LOBE_CHAT_CLOUD } from "@/const/branding"
 import { isServerMode } from "@/const/version"
 import { fileService } from "@/api/file"
