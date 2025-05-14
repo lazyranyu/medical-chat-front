@@ -6,8 +6,8 @@ export const fileService = {
      * @param file 文件信息
      */
     createFile: async file => {
-        const { data } = await apiClient.post(`files/create`, file)
-        return data
+        const response = await apiClient.post(`files/create`, file)
+        return response.data.data
     },
 
     /**
@@ -15,8 +15,8 @@ export const fileService = {
      * @param id 文件ID
      */
     getFile: async id => {
-        const { data } = await apiClient.get(`files/${id}`)
-        return data
+        const response = await apiClient.get(`files/${id}`)
+        return response.data
     },
 
     /**
@@ -51,8 +51,8 @@ export const fileService = {
      * @param hash 文件哈希值
      */
     checkFileHash: async hash => {
-        const { data } = await apiClient.get(`files/hash/${hash}`)
-        return data
+        const response = await apiClient.get(`files/hash/${hash}`)
+        return response.data.data
     },
 
     /**

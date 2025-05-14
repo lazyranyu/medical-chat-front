@@ -114,6 +114,7 @@ const AgentsSuggest = memo(({ mobile }) => {
                                 <Flexbox className={styles.card} gap={8} horizontal>
                                     <Avatar
                                         avatar={item.meta.avatar}
+                                        alt={item.meta.title}
                                         style={{ flex: "none" }}
                                     />
                                     <Flexbox

@@ -9,7 +9,11 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: 'http://localhost:8080/api/:path*' // 修改为包含/api前缀
-      }
+      },
+        {
+            source: '/images/:path*',
+            destination: 'http://127.0.0.1:9005/image/:path*'
+        }
     ]
   },
     async headers() {

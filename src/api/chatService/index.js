@@ -15,7 +15,7 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
     try {
         // 立即发送一个初始消息，使前端立即显示输入指示器
         onMessage?.({ type: 'text', text: '' });
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -49,7 +49,7 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
                         console.error('解析最终内容错误:', e, buffer);
                     }
                 }
-                
+
                 // 传递完整的内容给onComplete回调
                 onComplete?.(fullContent);
                 break;
@@ -73,18 +73,19 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
             for (const part of parts) {
                 if (part.startsWith('"data:"')) {
                     // 提取data:"和"之间的内容
-                    const content = part.substring(8, part.length - 1); // 去掉data:"前缀和结尾的"
+                    const content0 = part.substring(8, part.length - 1); // 去掉data:"前缀和结尾的"
                     try {
                         // 累积内容
+                        const  content =  content0.replace(/\\ndata:/g, '\n')
                         fullContent += content;
-                        
+
                         // 如果内容有多个字符，分割为单个字符进行发送以增强逐字效果
                         if (content.length > 1) {
                             const chars = content.split('');
                             for (const char of chars) {
                                 // 发送单个字符
                                 onMessage?.({ type: 'text', text: char });
-                                
+
                                 // 可选：添加小延迟让逐字效果更明显
                                 // 注意：这会使整体响应变慢，请根据需求调整或删除
                                 // await new Promise(resolve => setTimeout(resolve, 5));
@@ -107,6 +108,10 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
         }
     }
 };
+
+
+
+
 /**
  * 聊天服务
  */
@@ -140,9 +145,10 @@ export const chatService = {
                     historySummary,
                 }
             };
+            console.log('请求数据:', requestData);
 
             // 使用 fetch API 实现 SSE
-            await handleFetchSSE('/api/hello', requestData, {
+            await handleFetchSSE('/api/hello1', requestData, {
                 onMessage: onMessageHandle,
                 onError: onErrorHandle,
                 onComplete: onFinish,

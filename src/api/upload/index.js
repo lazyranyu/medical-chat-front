@@ -6,7 +6,8 @@ class UploadService {
     uploadWithProgress = async (file, { onProgress, directory }) => {
         const formData = new FormData()
         formData.append("file", file)
-
+        console.log("file",file)
+        console.log("formData",formData)
         if (directory) {
             formData.append("directory", directory)
         }
@@ -14,7 +15,7 @@ class UploadService {
         let startTime = Date.now()
 
         try {
-            const response = await apiClient.post("/upload", formData, {
+            const response = await apiClient.post("/files/upload", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 },
@@ -39,7 +40,7 @@ class UploadService {
                 }
             })
 
-            const result = response.data
+            const result = response.data.data
 
             onProgress?.("success", {
                 progress: 100,

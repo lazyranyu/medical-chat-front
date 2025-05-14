@@ -300,9 +300,7 @@ export const createMessageSlice = (set, get) => ({
       value: { content },
       immediate: true
     })
-    await messageService.updateMessage(id, {
-      content,
-    });
+    await messageService.updateMessage(id, content);
     await refreshMessages();
   },
 

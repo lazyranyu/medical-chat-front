@@ -120,7 +120,7 @@ export const messageService = {
     },
 
     removeMessagesByAssistant: async (sessionId, topicId) => {
-        const response = await apiClient.post('/message/removeMessagesByAssistant', {
+        const response = await apiClient.post('/message/removeMessagesByTopicId', {
             sessionId: messageService.toDbSessionId(sessionId),
             topicId,
         });

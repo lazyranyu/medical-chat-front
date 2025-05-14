@@ -28,6 +28,10 @@ const FileList = memo(() => {
         if (inputFilesList.length > 0) {
             console.log('文件列表:', inputFilesList);
         }
+        const ids = inputFilesList.map(item => item.id);
+        if (new Set(ids).size !== ids.length) {
+            console.log('发现重复ID:', ids);
+        }
     }, [inputFilesList]);
 
     const { styles } = useStyles()

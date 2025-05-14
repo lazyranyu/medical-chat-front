@@ -31,7 +31,6 @@ const FileUpload = memo(() => {
             accept={ 'image/*'}
             beforeUpload={async (file) => {
                 await upload([file]);
-
                 return false;
             }}
             disabled={!canUpload}

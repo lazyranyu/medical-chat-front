@@ -83,14 +83,15 @@ export const createFileUploadSlice = () => ({
         },
         knowledgeBaseId
     )
-
+    console.log("file upload success", data)
     // 最终状态更新通知
     onStatusUpdate?.({
       id: file.name,
       type: "updateFile",
       value: {
-        fileUrl: data.url,
+        url: data.url,
         id: data.id,
+        hash: data.hashId,
         status: "success",
         uploadState: { progress: 100, restTime: 0, speed: 0 }
       }

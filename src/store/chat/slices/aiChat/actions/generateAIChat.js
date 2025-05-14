@@ -105,10 +105,30 @@ export const generateAIChat = (set, get) => ({
     console.log("sendMessage11", message, files)
     set({ isCreatingMessage: true }, false, n("creatingMessage/start"))
 
+    // 根据文件类型区分图片和其他文件
+    const imageFiles = [];
+    const otherFiles = [];
+    
+    if (files && files.length > 0) {
+      files.forEach(file => {
+        // 判断是否为图片文件
+        if (file.file?.type?.startsWith('image/') || 
+            file.url?.includes('/image/') ||
+            file.hash?.includes('image')) {
+          imageFiles.push(file);
+        } else {
+          otherFiles.push(file);
+        }
+      });
+    }
+
     const newMessage = {
       content: message,
       // 如果消息附带文件，则添加文件到消息和Agent
       files: fileIdList,
+      // 根据文件类型区分图片和文件
+      imageList: imageFiles.length > 0 ? imageFiles : undefined,
+      fileList: otherFiles.length > 0 ? otherFiles : undefined,
       role: "user",
       // 如果有活跃话题ID，则添加到消息中
       topicId: activeTopicId,
@@ -513,7 +533,6 @@ export const generateAIChat = (set, get) => ({
 
     // 处理消息生成AI回复
     await internal_coreProcessMessage(contextMessages, latestMsg.id, {
-      ragQuery: get().internal_shouldUseRAG() ? latestMsg.content : undefined,
       threadId,
       inPortalThread
     })
