@@ -26,16 +26,18 @@ export const userProfileSelectors = {
   userAvatar: s => s.user?.avatar || "",
   userId: s => s.user?.id,
   userProfile: s => s.user,
-  username
+  username,
+  user: s => s.user,
+  isSignedIn: s => s.isSignedIn,
+  isLoading: s => s.isLoading,
 }
 
 /**
  * 使用此方法可以兼容不需要登录鉴权的情况
  */
 const isLogin = s => {
-  // 如果没有开启鉴权，说明不需要登录，默认是登录态
-  if (!s.enableAuth()) return true
-
+  // // 如果没有开启鉴权，说明不需要登录，默认是登录态
+  // if (!s.enableAuth()) return true
   return s.isSignedIn
 }
 

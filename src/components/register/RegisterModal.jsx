@@ -10,7 +10,8 @@ export const RegisterModal = ({ open, onClose }) => {
                 open={open}
                 onCancel={onClose}
                 footer={null}
-                width={800}
+                width={900}
+                height={580}
                 destroyOnClose
                 mask={false}
                 styles={{

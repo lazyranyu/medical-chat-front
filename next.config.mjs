@@ -14,7 +14,9 @@ const API_PROXY_ENDPOINT = process.env.API_PROXY_ENDPOINT || ""
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH
 
 const nextConfig = {
-    basePath,
+    assetPrefix: isProd ? `${basePath}/_next/static` : '', // 生产环境静态资源前缀
+    basePath: isProd ? basePath : '', // 基础路径
+    trailingSlash: true, // 确保路径结尾斜杠一致性
     compress: isProd,
     experimental: {
         optimizePackageImports: [
@@ -115,8 +117,12 @@ const nextConfig = {
         // due to google api not work correct in some countries
         // we need a proxy to bypass the restriction
         {
-            destination: `${API_PROXY_ENDPOINT}/api/chat/google`,
-            source: "/api/chat/google"
+            source: '/api/:path*',
+            destination: 'http://localhost:8080/api/:path*' // 修改为包含/api前缀
+        },
+        {
+            source: '/images/:path*',
+            destination: 'http://127.0.0.1:9005/image/:path*'
         }
     ],
 

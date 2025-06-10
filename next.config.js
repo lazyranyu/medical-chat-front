@@ -2,6 +2,10 @@ const isProd = process.env.NODE_ENV === 'production';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    assetPrefix: isProd ? `${basePath}/` : '', // 去掉 /_next/static 层级
+    basePath: isProd ? basePath : '', // 基础路径
+    trailingSlash: true, // 确保路径结尾斜杠一致性
+
     compress: isProd,
   reactStrictMode: true,
   async rewrites() {
@@ -35,6 +39,15 @@ const nextConfig = {
                     }
                 ],
                 source: "/favicon-32x32.ico"
+            },
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Access-Control-Allow-Origin',
+                        value: '*'
+                    }
+                ]
             }
         ]
     },

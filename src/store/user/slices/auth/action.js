@@ -1,4 +1,5 @@
 import { enableClerk } from "@/const/auth"
+import { login as apiLogin, getCurrentUser } from "@/api/user/auth";
 
 export const createAuthSlice = (set, get) => ({
   enableAuth: () => {
@@ -39,6 +40,24 @@ export const createAuthSlice = (set, get) => ({
         return
       }
       signIn()
+    }
+  },
+  loginAsync: async (credentials) => {
+    set({ isLoading: true });
+    try {
+      const data = await apiLogin(credentials);
+      // 登录成功后获取用户信息
+      const user = await getCurrentUser();
+      set({
+        user,
+        isSignedIn: true,
+        isLoading: false,
+        // 你可以根据需要设置 token 等
+      });
+      return user;
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
     }
   }
 })

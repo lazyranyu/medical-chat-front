@@ -63,7 +63,7 @@ const UserAvatar = forwardRef(
         return (
             <Avatar
                 alt={isSignedIn && username ? username : BRANDING_NAME}
-                avatar={isSignedIn && avatar ? avatar : DEFAULT_USER_AVATAR_URL}
+                avatar={DEFAULT_USER_AVATAR_URL}
                 background={isSignedIn && avatar ? background : undefined}
                 className={cx(clickable && styles.clickable, className)}
                 ref={ref}

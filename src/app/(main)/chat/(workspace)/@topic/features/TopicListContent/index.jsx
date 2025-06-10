@@ -61,7 +61,7 @@ const TopicListContent = memo(() => {
               <EmptyCard
                   alt={topic.guide.desc} // 图片替代文本
                   cover={imageUrl(
-                      `empty_topic_${isDarkMode ? "dark" : "light"}.webp`
+                      `empty_topic_light.webp`
                   )} // 根据当前主题选择不同的图片
                   desc={topic.guide.desc} // 描述文本
                   height={120} // 卡片高度

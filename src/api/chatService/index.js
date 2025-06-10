@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {apiClient} from "@/api/apiClient";
+import Cookies from "js-cookie";
 
 // 创建 axios 实例
 const api = axios.create({
@@ -20,7 +21,8 @@ const handleFetchSSE = async (url, data, { onMessage, onError, onComplete, signa
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'text/event-stream'
+                'Accept': 'text/event-stream',
+                'Authorization': `${Cookies.get('auth_token')}` // 添加认证头
             },
             body: JSON.stringify(data),
             signal

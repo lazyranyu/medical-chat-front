@@ -11,4 +11,8 @@ export const initialAuthState = {
     // 令牌过期时间
     tokenExpiry: null,
   },
+  // 新增字段
+  user: null,
+  isSignedIn: false,
+  isLoading: false,
 };

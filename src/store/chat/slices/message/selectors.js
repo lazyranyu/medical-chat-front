@@ -6,6 +6,7 @@
  */
 
 import { DEFAULT_USER_AVATAR } from "@/const/meta" // 默认用户头像常量
+import { DEFAULT_ASSISTANT_AVATAR } from "@/const/meta"
 import { INBOX_SESSION_ID } from "@/const/session" // 收件箱会话ID常量
 import { useAgentStore } from "@/store/agent" // 代理状态管理hook
 import { agentSelectors } from "@/store/agent/selectors" // 代理选择器
@@ -42,6 +43,7 @@ const getMeta = message => {
       // 助手消息
       return {
         ...meta,
+        avatar: DEFAULT_ASSISTANT_AVATAR,
         title: '助手'
       }
     }

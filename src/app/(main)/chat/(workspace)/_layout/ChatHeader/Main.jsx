@@ -17,6 +17,7 @@ import { DESKTOP_HEADER_ICON_SIZE } from '@/const/layoutTokens';
 //
 // import { useInitAgentConfig } from '../../useInitAgentConfig';
 import chat from "@/locales/default/chat";
+import {BRANDING_LOGO_URL} from "@/const/branding";
 
 const Main = memo(() => {
   // const { t } = useTranslation('chat');
@@ -34,9 +35,9 @@ const Main = memo(() => {
   // ]);
     const init = true; // 强制显示初始化完成状态
     const isInbox = false;
-    const title = '默认会话标题';
-    const description = '默认会话描述';
-    const avatar = '🔮'; // 或使用本地图片路径
+    const title = '你好，我是华小佗';
+    const description = '你的私人医学助理';
+    const avatar = BRANDING_LOGO_URL; // 或使用本地图片路径
     const backgroundColor = '#e8e8e8';
 
   // const openChatSettings = useOpenChatSettings();

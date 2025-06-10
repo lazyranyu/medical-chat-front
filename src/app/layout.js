@@ -1,5 +1,5 @@
 import "./globals.css";
-
+import { App as AntdApp } from 'antd';
 // 抑制antd的警告 - 只在客户端执行
 if (typeof window !== 'undefined') {
   // 重写console.warn来过滤掉特定的警告
@@ -33,6 +33,8 @@ if (typeof window !== 'undefined') {
 // };
 import StyleRegistry from "@/layout/StyleRegistry";
 import AppTheme from "@/layout/AppTheme";
+import RouteGuard from "@/components/RouteGuard";
+import AntdReact19Compat from '@/components/AntdReact19Compat';
 
 // 添加兼容性组件
 // import AntdReact19Compat from "@/components/AntdReact19Compat";
@@ -53,13 +55,15 @@ export default function RootLayout({ children }) {
   return (
       <html lang="en">
       <body suppressHydrationWarning>
-      {/*/!* 在最外层添加兼容性组件，确保早期初始化 *!/*/}
-      {/*<AntdReact19Compat />*/}
+      <AntdReact19Compat />
       <StyleRegistry>
           <AppTheme>
+              <RouteGuard>
               {children}
+              </RouteGuard>
           </AppTheme>
       </StyleRegistry>
+
       </body>
       </html>
   );

@@ -83,7 +83,7 @@ export default {
     },
   },
   regenerate: '重新生成',
-  roleAndArchive: '角色与记录',
+  roleAndArchive: '返回',
   searchAgentPlaceholder: '搜索助手...',
   sendPlaceholder: '输入聊天内容...',
   sessionGroup: {

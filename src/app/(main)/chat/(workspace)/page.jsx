@@ -20,7 +20,7 @@ export const generateMetadata = async () => {
     })
 }
 
-const Page = async () => {
+const Chat = async () => {
     // const { hideDocs, showChangelog } = serverFeatureFlags()
     // const { t } = await translation("metadata")
     const ld = ldModule.generate({
@@ -43,6 +43,4 @@ const Page = async () => {
     )
 }
 
-Page.displayName = "Chat"
-
-export default Page
+export default Chat
